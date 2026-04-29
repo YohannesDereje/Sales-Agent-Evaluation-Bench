@@ -1,0 +1,27 @@
+# Sealed held-out partition — never commit unencrypted
+tenacious_bench_v0.1/held_out/
+
+# Report outputs (HTML + PDF) — not tracked in source control
+*.html
+*.pdf
+
+# Working / personal files
+todos.md
+gemini_leader_prompt.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+.venv/
+
+# Secrets
+*.key
+.env.local
+openrouter_key.txt
+
+# OS
+.DS_Store
+Thumbs.db

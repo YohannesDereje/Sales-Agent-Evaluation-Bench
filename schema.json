@@ -1,0 +1,422 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "tenacious-bench-v0.1",
+  "title": "Tenacious-Bench Task Schema v0.1",
+  "description": "Schema for evaluation tasks in Tenacious-Bench, a domain-specific benchmark for B2B sales agent outreach quality.",
+  "task_schema": {
+    "type": "object",
+    "required": [
+      "task_id", "version", "dimension", "probe_id",
+      "source_mode", "difficulty", "input",
+      "candidate_output", "ground_truth", "scoring_rubric_version", "metadata"
+    ],
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "pattern": "^TB-[A-Z]+-[0-9]{3}$",
+        "description": "Unique task identifier. Format: TB-{DIMENSION_CODE}-{3-digit-number}"
+      },
+      "version": {
+        "type": "string",
+        "enum": ["0.1"],
+        "description": "Dataset version this task belongs to"
+      },
+      "dimension": {
+        "type": "string",
+        "enum": [
+          "signal_over_claiming",
+          "bench_over_commitment",
+          "tone_drift",
+          "multi_thread_leakage",
+          "icp_misclassification",
+          "signal_reliability",
+          "gap_over_claiming",
+          "cost_pathology",
+          "dual_control_coordination",
+          "scheduling_edge_case"
+        ],
+        "description": "The failure dimension this task is designed to test"
+      },
+      "probe_id": {
+        "type": "string",
+        "pattern": "^[A-Z]+-[0-9]{2}$",
+        "description": "Probe ID from Week 10 probe_library.md that seeds this task"
+      },
+      "source_mode": {
+        "type": "string",
+        "enum": ["trace_derived", "programmatic", "multi_llm_synthesis", "hand_authored"],
+        "description": "How this task was created"
+      },
+      "difficulty": {
+        "type": "string",
+        "enum": ["easy", "medium", "hard", "adversarial"],
+        "description": "Difficulty level — adversarial tasks are hand-authored to defeat the Week 10 agent"
+      },
+      "input": {
+        "type": "object",
+        "required": ["hiring_signal_brief", "bench_summary", "prior_thread", "task_instruction"],
+        "properties": {
+          "hiring_signal_brief": {
+            "type": "object",
+            "required": [
+              "company_name", "company_size", "segment",
+              "signal_type", "signal_text", "signal_confidence",
+              "hiring_velocity_label", "ai_maturity_score",
+              "stack", "headcount_requested", "funding_status"
+            ],
+            "properties": {
+              "company_name":          { "type": "string" },
+              "company_size":          { "type": "string", "enum": ["startup_under50", "mid_market_50_500", "enterprise_500plus"] },
+              "segment":               { "type": "string" },
+              "signal_type":           { "type": "string", "enum": ["job_posting", "layoff_signal", "funding_event", "linkedin_growth", "press_release"] },
+              "signal_text":           { "type": "string", "description": "The raw hiring signal — verbatim or paraphrased public data" },
+              "signal_confidence":     { "type": "string", "enum": ["high", "medium", "low"] },
+              "hiring_velocity_label": { "type": "string", "enum": ["strong_signal", "moderate_signal", "weak_hiring_velocity_signal", "very_weak_signal"] },
+              "ai_maturity_score":     { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+              "stack":                 { "type": "array", "items": { "type": "string" } },
+              "headcount_requested":   { "type": "integer", "minimum": 1 },
+              "funding_status":        { "type": "string" },
+              "recent_news":           { "type": ["string", "null"] }
+            }
+          },
+          "bench_summary": {
+            "type": "object",
+            "required": ["available_engineers", "available_headcount", "specializations", "earliest_start_weeks"],
+            "properties": {
+              "available_engineers":   { "type": "integer", "minimum": 0 },
+              "available_headcount":   { "type": "integer", "minimum": 0 },
+              "specializations":       { "type": "array", "items": { "type": "string" } },
+              "earliest_start_weeks":  { "type": "integer", "minimum": 0 }
+            }
+          },
+          "prior_thread": {
+            "type": ["string", "null"],
+            "description": "Prior email thread if any, null for cold outreach"
+          },
+          "task_instruction": {
+            "type": "string",
+            "description": "The instruction given to the agent"
+          }
+        }
+      },
+      "candidate_output": {
+        "type": "string",
+        "description": "The agent output to be scored. Empty string when used as a task template."
+      },
+      "ground_truth": {
+        "type": "object",
+        "required": ["passing_criteria", "scoring"],
+        "properties": {
+          "passing_criteria": {
+            "type": "object",
+            "description": "Each key is a rubric dimension name. Each value defines the check.",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["description", "check_type"],
+              "properties": {
+                "description":    { "type": "string" },
+                "check_type":     { "type": "string", "enum": ["regex_negative", "regex_positive", "length_check", "field_presence"] },
+                "banned_patterns":  { "type": "array", "items": { "type": "string" } },
+                "required_patterns":{ "type": "array", "items": { "type": "string" } },
+                "min_chars":      { "type": "integer" },
+                "max_chars":      { "type": "integer" },
+                "required_fields":{ "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "scoring": {
+            "type": "object",
+            "description": "Weights per dimension — must sum to 1.0",
+            "additionalProperties": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+          }
+        }
+      },
+      "scoring_rubric_version": {
+        "type": "string",
+        "description": "Version of the scoring rubric used"
+      },
+      "metadata": {
+        "type": "object",
+        "properties": {
+          "source_trace_id":   { "type": ["string", "null"] },
+          "seed_probe":        { "type": "string" },
+          "params":            { "type": "object" },
+          "created_by":        { "type": "string" },
+          "dataset_version":   { "type": "string" },
+          "synthesis_model":   { "type": ["string", "null"] },
+          "seed_dimension":    { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+
+  "examples": [
+    {
+      "task_id": "TB-SOC-001",
+      "version": "0.1",
+      "dimension": "signal_over_claiming",
+      "probe_id": "SOC-01",
+      "source_mode": "trace_derived",
+      "difficulty": "medium",
+      "input": {
+        "hiring_signal_brief": {
+          "company_name": "Meridian Data Labs",
+          "company_size": "mid_market_50_500",
+          "segment": "segment_2_mid_market_restructure",
+          "signal_type": "job_posting",
+          "signal_text": "Backend Engineer (Python/AWS) — posted 6 weeks ago, 0 listed applicants, no repost",
+          "signal_confidence": "low",
+          "hiring_velocity_label": "weak_hiring_velocity_signal",
+          "ai_maturity_score": 0.3,
+          "stack": ["Python", "AWS", "Django"],
+          "headcount_requested": 2,
+          "funding_status": "Series A (19 months ago)",
+          "recent_news": null
+        },
+        "bench_summary": {
+          "available_engineers": 3,
+          "available_headcount": 2,
+          "specializations": ["backend", "Python", "AWS"],
+          "earliest_start_weeks": 2
+        },
+        "prior_thread": null,
+        "task_instruction": "Generate a cold outreach email to the engineering hiring manager at Meridian Data Labs about Tenacious's staffing services."
+      },
+      "candidate_output": "",
+      "ground_truth": {
+        "passing_criteria": {
+          "no_assertive_velocity_claim": {
+            "description": "Email must NOT contain assertive hiring velocity language when hiring_velocity_label is weak_hiring_velocity_signal",
+            "check_type": "regex_negative",
+            "banned_patterns": [
+              "rapidly scal",
+              "aggressive.*hir",
+              "significant.*growth",
+              "expanding.*team",
+              "fast.*grow",
+              "explosive.*growth",
+              "massive.*hir",
+              "scaling.*fast",
+              "rapid.*growth",
+              "growing.*fast"
+            ]
+          },
+          "signal_referenced": {
+            "description": "Email must reference the specific job posting or engineering role",
+            "check_type": "regex_positive",
+            "required_patterns": ["Backend Engineer", "[Ee]ngineer", "role", "position", "posting"]
+          },
+          "calendar_link_present": {
+            "description": "Email must include a calendar link or meeting CTA",
+            "check_type": "regex_positive",
+            "required_patterns": ["cal\\.com", "calendly", "[Bb]ook.*call", "[Ss]chedule.*call", "30.*min", "quick.*call", "\\[Book"]
+          },
+          "length_appropriate": {
+            "description": "Email must be between 80 and 300 words to be a plausible cold outreach",
+            "check_type": "length_check",
+            "min_chars": 400,
+            "max_chars": 1800
+          }
+        },
+        "scoring": {
+          "no_assertive_velocity_claim": 0.4,
+          "signal_referenced": 0.25,
+          "calendar_link_present": 0.25,
+          "length_appropriate": 0.1
+        }
+      },
+      "scoring_rubric_version": "0.1",
+      "metadata": {
+        "source_trace_id": "bcef6c8e2dfad99cd3b64e8d4d9451a3",
+        "seed_probe": "SOC-01",
+        "params": {},
+        "created_by": "hand_authored_for_schema_example",
+        "dataset_version": "0.1",
+        "synthesis_model": null,
+        "seed_dimension": null
+      }
+    },
+
+    {
+      "task_id": "TB-BOC-001",
+      "version": "0.1",
+      "dimension": "bench_over_commitment",
+      "probe_id": "BOC-01",
+      "source_mode": "programmatic",
+      "difficulty": "hard",
+      "input": {
+        "hiring_signal_brief": {
+          "company_name": "Vantage Systems Group",
+          "company_size": "enterprise_500plus",
+          "segment": "segment_3_enterprise_ai_build",
+          "signal_type": "job_posting",
+          "signal_text": "3x Senior ML Engineer roles posted this month, all active with applicants",
+          "signal_confidence": "high",
+          "hiring_velocity_label": "strong_signal",
+          "ai_maturity_score": 0.8,
+          "stack": ["Python", "PyTorch", "Kubernetes", "GCP"],
+          "headcount_requested": 3,
+          "funding_status": "Series C (8 months ago, $80M)",
+          "recent_news": "Announced AI platform partnership with major cloud provider"
+        },
+        "bench_summary": {
+          "available_engineers": 1,
+          "available_headcount": 1,
+          "specializations": ["ML", "Python"],
+          "earliest_start_weeks": 4
+        },
+        "prior_thread": null,
+        "task_instruction": "Generate a cold outreach email to the VP of Engineering at Vantage Systems Group about Tenacious's ability to staff their ML team."
+      },
+      "candidate_output": "",
+      "ground_truth": {
+        "passing_criteria": {
+          "no_over_commitment": {
+            "description": "Email must NOT offer more engineers than bench_summary.available_headcount (1). Must not offer 3 or more engineers.",
+            "check_type": "regex_negative",
+            "banned_patterns": [
+              "[Ww]e have [2-9] engineer",
+              "[Pp]rovide [2-9] engineer",
+              "[Ss]taff.*[2-9] engineer",
+              "[Oo]ffer.*[2-9].*engineer",
+              "three engineer",
+              "3 engineer",
+              "full.*team.*ready"
+            ]
+          },
+          "availability_qualified": {
+            "description": "Email must qualify availability or mention limited capacity",
+            "check_type": "regex_positive",
+            "required_patterns": [
+              "availab",
+              "capacit",
+              "current.*bench",
+              "one.*engineer",
+              "1 engineer",
+              "limited"
+            ]
+          },
+          "calendar_link_present": {
+            "description": "Email must include a calendar link or meeting CTA",
+            "check_type": "regex_positive",
+            "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule", "30.*min", "quick.*call"]
+          }
+        },
+        "scoring": {
+          "no_over_commitment": 0.5,
+          "availability_qualified": 0.3,
+          "calendar_link_present": 0.2
+        }
+      },
+      "scoring_rubric_version": "0.1",
+      "metadata": {
+        "source_trace_id": null,
+        "seed_probe": "BOC-01",
+        "params": {
+          "company_size": "enterprise_500plus",
+          "hiring_velocity_label": "strong_signal",
+          "bench_state": "partially_available_50pct",
+          "requested_headcount": 3,
+          "available_headcount": 1
+        },
+        "created_by": "hand_authored_for_schema_example",
+        "dataset_version": "0.1",
+        "synthesis_model": null,
+        "seed_dimension": null
+      }
+    },
+
+    {
+      "task_id": "TB-TD-001",
+      "version": "0.1",
+      "dimension": "tone_drift",
+      "probe_id": "TD-01",
+      "source_mode": "hand_authored",
+      "difficulty": "adversarial",
+      "input": {
+        "hiring_signal_brief": {
+          "company_name": "HypeStack Inc",
+          "company_size": "startup_under50",
+          "segment": "segment_1_startup_hypergrowth",
+          "signal_type": "press_release",
+          "signal_text": "HypeStack Inc CRUSHES Q1 targets — We're 10x-ing our engineering team to DOMINATE the AI infrastructure space!!!",
+          "signal_confidence": "medium",
+          "hiring_velocity_label": "moderate_signal",
+          "ai_maturity_score": 0.5,
+          "stack": ["Go", "Rust", "Kubernetes"],
+          "headcount_requested": 2,
+          "funding_status": "Seed (3 months ago, $4M)",
+          "recent_news": "Founder tweet: 'We move fast and break things. No room for slow people here.'"
+        },
+        "bench_summary": {
+          "available_engineers": 4,
+          "available_headcount": 2,
+          "specializations": ["backend", "Go", "infrastructure"],
+          "earliest_start_weeks": 1
+        },
+        "prior_thread": null,
+        "task_instruction": "Generate a cold outreach email to the CTO of HypeStack Inc about Tenacious's staffing services. The prospect's company language is very informal and hype-heavy."
+      },
+      "candidate_output": "",
+      "ground_truth": {
+        "passing_criteria": {
+          "no_hype_mirroring": {
+            "description": "Email must NOT mirror the prospect's hype/aggressive language. Tenacious tone is direct, grounded, professional — never exclamatory or superlative.",
+            "check_type": "regex_negative",
+            "banned_patterns": [
+              "CRUSH",
+              "DOMINATE",
+              "10x",
+              "!!!",
+              "move fast",
+              "break things",
+              "game.?changer",
+              "rocket ship",
+              "crushing it",
+              "killing it",
+              "superstar",
+              "ninja",
+              "rockstar"
+            ]
+          },
+          "professional_greeting": {
+            "description": "Email must open with a professional greeting, not informal slang",
+            "check_type": "regex_negative",
+            "banned_patterns": [
+              "^Hey!",
+              "^Yo ",
+              "^What's up",
+              "^Sup "
+            ]
+          },
+          "signal_referenced": {
+            "description": "Email must reference the engineering hiring need",
+            "check_type": "regex_positive",
+            "required_patterns": ["engineer", "infrastructure", "Go", "Rust", "staffing", "team"]
+          },
+          "calendar_link_present": {
+            "description": "Email must include a calendar link or meeting CTA",
+            "check_type": "regex_positive",
+            "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule", "30.*min", "quick.*call"]
+          }
+        },
+        "scoring": {
+          "no_hype_mirroring": 0.4,
+          "professional_greeting": 0.1,
+          "signal_referenced": 0.25,
+          "calendar_link_present": 0.25
+        }
+      },
+      "scoring_rubric_version": "0.1",
+      "metadata": {
+        "source_trace_id": null,
+        "seed_probe": "TD-01",
+        "params": {},
+        "created_by": "hand_authored_adversarial",
+        "dataset_version": "0.1",
+        "synthesis_model": null,
+        "seed_dimension": "tone_drift"
+      }
+    }
+  ]
+}
