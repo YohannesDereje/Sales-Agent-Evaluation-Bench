@@ -60,6 +60,52 @@ Three checks are run by `generation_scripts/partition_and_contamination.py` befo
 
 ---
 
+## Contamination Check Results
+
+`partition_and_contamination.py` writes results to `tenacious_bench_v0.1/contamination_check.json`. All three checks passed with zero flagged pairs.
+
+| Check | Pairs flagged | Action taken |
+|-------|--------------|--------------|
+| 8-gram overlap (threshold: any match → flag) | 0 | None required |
+| Jaccard similarity (threshold: ≥ 0.60 → flag) | 0 | None required |
+| Time-shift verification (window: 2026-04) | PASS | Documented in `contamination_check.json` |
+
+**Final dataset status:** `contamination_check.json` records `"summary": "PASS"`. The post-filter, post-dedup pool of ≥ 200 tasks is cleared for the 50/30/20 partition with no cross-partition contamination. No tasks were dropped or modified as a result of the contamination checks.
+
+**Why zero flags are structurally expected:**
+
+- *Programmatic tasks* share parameter templates but differ in the specific combination of sampled values. An 8-gram overlap between two tasks would require identical parameter values across all fields simultaneously — the `random.seed(42)` combinatorial sweep avoids this by design.
+- *Trace-derived tasks* are each anchored to a distinct `source_trace_id`. No two tasks share the same trace as a generation seed, so their `signal_text` fields are structurally distinct.
+- *Synthesis tasks* carry an explicit `confounding_factor` field that varies across tasks within the same dimension, reducing lexical similarity below the 0.60 Jaccard threshold.
+- *Hand-authored tasks* were written with distinct company archetypes and adversarial scenarios per category, with no templated repetition.
+
+**Action protocol for any future flagged pairs** (applicable if the dedup threshold is tightened to 0.60 for v1.0 release):
+
+| Similarity | Action |
+|-----------|--------|
+| N-gram overlap (any) | Drop the held-out task; retain train duplicate as training record |
+| Jaccard ≥ 0.70 | Modify one non-evaluation field in the held-out task (e.g., company name, signal date) to reduce similarity, then re-run check |
+| Jaccard 0.60–0.70 | Retain with documented justification if similarity is in boilerplate fields (company description, greeting) and not in `signal_text` or `task_instruction` |
+
+---
+
+## Partitioning and Stratification Notes
+
+The `random.seed(42)` shuffle partitions the filtered pool as a single random sequence rather than a stratified sample. Per-dimension representation across splits is therefore not guaranteed for dimensions with low raw task counts (DCC: 12 raw tasks; SE: 12 raw tasks).
+
+**Approximate difficulty mix** across the raw pool (post-filter proportions will be similar):
+
+| Difficulty | Approx. share | Source |
+|------------|--------------|--------|
+| `easy` | ~15% | Trace-derived tasks with duration < 70 s |
+| `medium` | ~55% | All programmatic tasks; trace-derived 70–120 s |
+| `hard` | ~18% | Trace-derived > 120 s; synthesis tasks |
+| `adversarial` | ~12% | All 30 hand-authored tasks |
+
+Because the random shuffle does not preferentially separate by difficulty or dimension, each partition receives approximately the same difficulty mix. This is acceptable for the dev-phase evaluation where overall pass rate is the primary metric. For v1.0 (Day 7), stratified sampling by `seed_dimension` and `difficulty` is planned to guarantee minimum per-stratum representation in the held-out partition and to ensure that every failure dimension — including low-count ones like DCC and SE — has at least one task in held-out evaluation.
+
+---
+
 ## Model Rotation Policy (Preference Leakage Prevention)
 
 Per Li et al. (2025) *Preference Leakage*: never use the same model to both generate and judge the same task.
