@@ -1,15 +1,3 @@
 timestamp,bucket,model,purpose,cost_usd
-2026-04-29T00:00:00Z,generation,none,generate_programmatic.py — 120 tasks via combinatorial sweep (no API call),0.00
-2026-04-29T00:00:00Z,generation,none,generate_trace_derived.py — 110 tasks from trace_log.jsonl (no API call),0.00
-2026-04-29T00:00:00Z,generation,claude-sonnet-4-6,generate_synthesis.py — 75 hard synthesis tasks authored locally by Claude in-session,0.00
-2026-04-29T00:00:00Z,generation,none,_gen_hand_authored.py — 30 adversarial tasks written as static JSON (no API call),0.00
-2026-04-29T00:00:00Z,filtering,none,judge_filter.py — rule-based quality filter and dedup (no API call),0.00
-2026-04-29T00:00:00Z,filtering,none,partition_and_contamination.py — deterministic split and contamination check (no API call),0.00
-2026-04-29T00:00:00Z,evaluation,none,scoring_evaluator.py self-test — regex scorer applied to 6 fixed test cases (no API call),0.00
-2026-04-29T00:00:00Z,authoring,claude-sonnet-4-6,schema.json — task schema design and 3 annotated examples (in-session),0.00
-2026-04-29T00:00:00Z,authoring,claude-sonnet-4-6,audit_memo.md — tau2-Bench gap analysis (in-session),0.00
-2026-04-29T00:00:00Z,authoring,claude-sonnet-4-6,methodology.md — Path A SFT rationale and data protocol (in-session),0.00
-2026-04-29T00:00:00Z,authoring,claude-sonnet-4-6,inter_rater_agreement.md — rubric reliability report (in-session),0.00
-2026-04-29T00:00:00Z,authoring,claude-sonnet-4-6,datasheet.md — Gebru + Pushkarna Data Card (in-session),0.00
-2026-04-29T00:00:00Z,training,tbd,SFT LoRA fine-tuning — Unsloth on Colab T4 (Days 4-5; free tier),0.00
-2026-04-29T00:00:00Z,evaluation,tbd,Held-out evaluation of fine-tuned model (Day 6; scoring_evaluator.py only),0.00
+2026-05-01T18:01:33.719475,preflight,deepseek/deepseek-chat,openrouter api key test,0.00
+2026-05-01T18:30:00.000000,preflight,colab-t4,unsloth dummy training run end-to-end test,0.00
