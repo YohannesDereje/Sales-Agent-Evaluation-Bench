@@ -1,0 +1,3152 @@
+[
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0050",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0012",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-PG-0120",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O1_good",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0028-SEED",
+    "output_id": "O5_too_short",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0095",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 2 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 2 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 2 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 2 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 2 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0046",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-PG-0111",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0073",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert current momentum from stale funding when lay",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert team expansion when company has had recent l",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert current momentum from stale funding when lay",
+    "passed": false,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert team expansion when company has had recent l",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert current momentum from stale funding when lay",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert team expansion when company has had recent l",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert current momentum from stale funding when lay",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert team expansion when company has had recent l",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert current momentum from stale funding when lay",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-HA-005",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Must NOT assert team expansion when company has had recent l",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use hype or banned phrases",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT be condescending",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use hype or banned phrases",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT be condescending",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use hype or banned phrases",
+    "passed": false,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT be condescending",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use hype or banned phrases",
+    "passed": false,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT be condescending",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use hype or banned phrases",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT be condescending",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-TD-SY-0026-VAR3",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities from prior thread",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities from prior thread",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities from prior thread",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities from prior thread",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-SY-0035-SEED",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities from prior thread",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O1_good",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": false,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0072",
+    "output_id": "O5_too_short",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-DCC-PG-0075",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0096",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0058",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0018",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O1_good",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT assert stale signal as current fact",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-SY-0030-VAR1",
+    "output_id": "O5_too_short",
+    "check_type": "regex_positive",
+    "description": "Email must qualify claims with signal age",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": false,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-BOC-PG-0031",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-PG-0043",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 3 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0033",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned phrases",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned phrases",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned phrases",
+    "passed": false,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned phrases",
+    "passed": false,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned phrases",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-SY-0069-SEED",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Response must be 50-700 characters",
+    "passed": false,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0025",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SR-PG-0017",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 5 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SE-PG-0059",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-GAP-PG-0053",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O1_good",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": false,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0011",
+    "output_id": "O5_too_short",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Must NOT reference prior thread context in new prospect emai",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Must NOT include 'proprietary ML pipeline integration' \u2014 fab",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Must NOT reference prior thread context in new prospect emai",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Must NOT include 'proprietary ML pipeline integration' \u2014 fab",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Must NOT reference prior thread context in new prospect emai",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Must NOT include 'proprietary ML pipeline integration' \u2014 fab",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Must NOT reference prior thread context in new prospect emai",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Must NOT include 'proprietary ML pipeline integration' \u2014 fab",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Must NOT reference prior thread context in new prospect emai",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-HA-002",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Must NOT include 'proprietary ML pipeline integration' \u2014 fab",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 1 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O1_good",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 1 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 1 engineers when bench_state=overcommi",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O3_overcommit",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 1 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": false,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O4_banned_phrases",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": true,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT commit 1 engineers when bench_state=overcommi",
+    "passed": true,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT contain banned Tenacious style-guide phrases",
+    "passed": true,
+    "weight": 0.3
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-ICP-PG-0029",
+    "output_id": "O5_too_short",
+    "check_type": "length_check",
+    "description": "Cold outreach must be 50\u2013700 characters",
+    "passed": false,
+    "weight": 0.2
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT reference prior thread context in new prospec",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-MTL-TD-0100",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT include capabilities fabricated from prior th",
+    "passed": true,
+    "weight": 0.5
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O1_good",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O1_good",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": false,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O2_aggressive_velocity",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O3_overcommit",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O4_banned_phrases",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O5_too_short",
+    "check_type": "regex_negative",
+    "description": "Email must NOT use assertive velocity language when signal_c",
+    "passed": true,
+    "weight": 0.6
+  },
+  {
+    "round": "round2",
+    "task_id": "TB-SOC-TD-0015",
+    "output_id": "O5_too_short",
+    "check_type": "regex_positive",
+    "description": "Email must use hedged ask language proportional to signal co",
+    "passed": false,
+    "weight": 0.4
+  }
+]

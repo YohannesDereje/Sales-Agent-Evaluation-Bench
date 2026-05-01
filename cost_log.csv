@@ -1,3 +1,78 @@
 timestamp,bucket,model,purpose,cost_usd
 2026-05-01T18:01:33.719475,preflight,deepseek/deepseek-chat,openrouter api key test,0.00
 2026-05-01T18:30:00.000000,preflight,colab-t4,unsloth dummy training run end-to-end test,0.00
+2026-05-01T20:40:17.481802+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SOC idx=0,0.00356700
+2026-05-01T20:40:25.743619+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SOC idx=1,0.00425700
+2026-05-01T20:40:32.723618+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SOC idx=2,0.00358200
+2026-05-01T20:40:39.955486+00:00,synthesis,deepseek/deepseek-chat,variation dim=SOC seed=0 var=0,0.00009744
+2026-05-01T20:40:50.896587+00:00,synthesis,deepseek/deepseek-chat,variation dim=SOC seed=0 var=1,0.00009604
+2026-05-01T20:41:03.491003+00:00,synthesis,deepseek/deepseek-chat,variation dim=SOC seed=1 var=0,0.00011298
+2026-05-01T20:41:16.737955+00:00,synthesis,deepseek/deepseek-chat,variation dim=SOC seed=1 var=1,0.00011270
+2026-05-01T20:41:26.706024+00:00,synthesis,deepseek/deepseek-chat,variation dim=SOC seed=2 var=0,0.00009422
+2026-05-01T20:41:38.530240+00:00,synthesis,deepseek/deepseek-chat,variation dim=SOC seed=2 var=1,0.00009450
+2026-05-01T20:41:44.904288+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=BOC idx=0,0.00332700
+2026-05-01T20:41:51.210107+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=BOC idx=1,0.00355200
+2026-05-01T20:41:57.639782+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=BOC idx=2,0.00361200
+2026-05-01T20:42:11.305814+00:00,synthesis,deepseek/deepseek-chat,variation dim=BOC seed=0 var=0,0.00009156
+2026-05-01T20:42:18.619619+00:00,synthesis,deepseek/deepseek-chat,variation dim=BOC seed=0 var=1,0.00009324
+2026-05-01T20:42:28.993711+00:00,synthesis,deepseek/deepseek-chat,variation dim=BOC seed=1 var=0,0.00009534
+2026-05-01T20:42:35.243721+00:00,synthesis,deepseek/deepseek-chat,variation dim=BOC seed=1 var=1,0.00009674
+2026-05-01T20:42:46.014420+00:00,synthesis,deepseek/deepseek-chat,variation dim=BOC seed=2 var=0,0.00009912
+2026-05-01T20:42:56.875025+00:00,synthesis,deepseek/deepseek-chat,variation dim=BOC seed=2 var=1,0.00009968
+2026-05-01T20:43:02.782190+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=TD idx=0,0.00316800
+2026-05-01T20:43:11.202380+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=TD idx=1,0.00366300
+2026-05-01T20:43:19.078554+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=TD idx=2,0.00351300
+2026-05-01T20:43:26.253911+00:00,synthesis,deepseek/deepseek-chat,variation dim=TD seed=0 var=0,0.00008736
+2026-05-01T20:43:35.789837+00:00,synthesis,deepseek/deepseek-chat,variation dim=TD seed=0 var=1,0.00008652
+2026-05-01T20:43:45.280085+00:00,synthesis,deepseek/deepseek-chat,variation dim=TD seed=1 var=0,0.00009926
+2026-05-01T20:43:54.270586+00:00,synthesis,deepseek/deepseek-chat,variation dim=TD seed=1 var=1,0.00009926
+2026-05-01T20:44:03.680659+00:00,synthesis,deepseek/deepseek-chat,variation dim=TD seed=2 var=0,0.00009464
+2026-05-01T20:44:12.377354+00:00,synthesis,deepseek/deepseek-chat,variation dim=TD seed=2 var=1,0.00009464
+2026-05-01T20:44:18.389317+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SR idx=0,0.00319800
+2026-05-01T20:44:24.868878+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SR idx=1,0.00349800
+2026-05-01T20:44:31.183906+00:00,synthesis,deepseek/deepseek-chat,variation dim=SR seed=0 var=0,0.00008484
+2026-05-01T20:44:37.150846+00:00,synthesis,deepseek/deepseek-chat,variation dim=SR seed=0 var=1,0.00008540
+2026-05-01T20:44:44.526626+00:00,synthesis,deepseek/deepseek-chat,variation dim=SR seed=1 var=0,0.00009506
+2026-05-01T20:44:51.739171+00:00,synthesis,deepseek/deepseek-chat,variation dim=SR seed=1 var=1,0.00009618
+2026-05-01T20:44:57.224029+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=MTL idx=0,0.00374700
+2026-05-01T20:45:07.247267+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=MTL idx=1,0.00358200
+2026-05-01T20:45:13.886003+00:00,synthesis,deepseek/deepseek-chat,variation dim=MTL seed=0 var=0,0.00010122
+2026-05-01T20:45:20.622437+00:00,synthesis,deepseek/deepseek-chat,variation dim=MTL seed=0 var=1,0.00010150
+2026-05-01T20:45:26.776965+00:00,synthesis,deepseek/deepseek-chat,variation dim=MTL seed=1 var=0,0.00009688
+2026-05-01T20:45:34.138148+00:00,synthesis,deepseek/deepseek-chat,variation dim=MTL seed=1 var=1,0.00009716
+2026-05-01T20:45:41.532384+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=ICP idx=0,0.00371700
+2026-05-01T20:45:49.686826+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=ICP idx=1,0.00355200
+2026-05-01T20:45:58.795269+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=ICP idx=2,0.00362700
+2026-05-01T20:46:07.607080+00:00,synthesis,deepseek/deepseek-chat,variation dim=ICP seed=0 var=0,0.00010038
+2026-05-01T20:46:16.694253+00:00,synthesis,deepseek/deepseek-chat,variation dim=ICP seed=0 var=1,0.00010038
+2026-05-01T20:46:23.024468+00:00,synthesis,deepseek/deepseek-chat,variation dim=ICP seed=1 var=0,0.00009492
+2026-05-01T20:46:30.741001+00:00,synthesis,deepseek/deepseek-chat,variation dim=ICP seed=1 var=1,0.00009464
+2026-05-01T20:46:40.204365+00:00,synthesis,deepseek/deepseek-chat,variation dim=ICP seed=2 var=0,0.00009702
+2026-05-01T20:46:47.650429+00:00,synthesis,deepseek/deepseek-chat,variation dim=ICP seed=2 var=1,0.00009702
+2026-05-01T20:46:53.340451+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=GAP idx=0,0.00343200
+2026-05-01T20:47:02.404243+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=GAP idx=1,0.00338700
+2026-05-01T20:47:07.661397+00:00,synthesis,deepseek/deepseek-chat,variation dim=GAP seed=0 var=0,0.00009324
+2026-05-01T20:47:13.894899+00:00,synthesis,deepseek/deepseek-chat,variation dim=GAP seed=0 var=1,0.00009380
+2026-05-01T20:47:20.349205+00:00,synthesis,deepseek/deepseek-chat,variation dim=GAP seed=1 var=0,0.00009590
+2026-05-01T20:47:26.912418+00:00,synthesis,deepseek/deepseek-chat,variation dim=GAP seed=1 var=1,0.00009478
+2026-05-01T20:47:32.597157+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=CP idx=0,0.00339300
+2026-05-01T20:47:38.113622+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=CP idx=1,0.00337800
+2026-05-01T20:47:44.550985+00:00,synthesis,deepseek/deepseek-chat,variation dim=CP seed=0 var=0,0.00009142
+2026-05-01T20:47:50.381156+00:00,synthesis,deepseek/deepseek-chat,variation dim=CP seed=0 var=1,0.00009198
+2026-05-01T20:47:57.290418+00:00,synthesis,deepseek/deepseek-chat,variation dim=CP seed=1 var=0,0.00009268
+2026-05-01T20:48:03.821228+00:00,synthesis,deepseek/deepseek-chat,variation dim=CP seed=1 var=1,0.00009408
+2026-05-01T20:48:10.175223+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=DCC idx=0,0.00350700
+2026-05-01T20:48:18.427495+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=DCC idx=1,0.00350700
+2026-05-01T20:48:25.249175+00:00,synthesis,deepseek/deepseek-chat,variation dim=DCC seed=0 var=0,0.00009464
+2026-05-01T20:48:31.979845+00:00,synthesis,deepseek/deepseek-chat,variation dim=DCC seed=0 var=1,0.00009436
+2026-05-01T20:48:38.377279+00:00,synthesis,deepseek/deepseek-chat,variation dim=DCC seed=1 var=0,0.00009520
+2026-05-01T20:48:44.763873+00:00,synthesis,deepseek/deepseek-chat,variation dim=DCC seed=1 var=1,0.00009660
+2026-05-01T20:48:51.118957+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SE idx=0,0.00346800
+2026-05-01T20:48:56.727739+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SE idx=1,0.00361800
+2026-05-01T20:49:02.775980+00:00,synthesis,anthropic/claude-sonnet-4-6,seed dim=SE idx=2,0.00348300
+2026-05-01T20:49:09.106675+00:00,synthesis,deepseek/deepseek-chat,variation dim=SE seed=0 var=0,0.00009492
+2026-05-01T20:49:15.991933+00:00,synthesis,deepseek/deepseek-chat,variation dim=SE seed=0 var=1,0.00009436
+2026-05-01T20:49:22.730477+00:00,synthesis,deepseek/deepseek-chat,variation dim=SE seed=1 var=0,0.00009814
+2026-05-01T20:49:29.678235+00:00,synthesis,deepseek/deepseek-chat,variation dim=SE seed=1 var=1,0.00009842
+2026-05-01T20:49:36.388313+00:00,synthesis,deepseek/deepseek-chat,variation dim=SE seed=2 var=0,0.00009506
+2026-05-01T20:49:43.556265+00:00,synthesis,deepseek/deepseek-chat,variation dim=SE seed=2 var=1,0.00009534

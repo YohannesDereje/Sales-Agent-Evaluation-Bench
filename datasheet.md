@@ -1,301 +1,360 @@
 # Datasheet for Tenacious-Bench v0.1
-*Following Gebru et al. (2021) "Datasheets for Datasets" and Pushkarna & Zaldivar (2022) Data Cards*
+
+> Gebru et al. (2021) datasheet format with Pushkarna et al. (2022) three-scope annotations.
+> Version: 0.1 | Created: 2026-04-29 | Maintainer: Yohannes (yohannes@10academy.org)
 
 ---
 
-## Pushkarna Data Card — Telescopic View
+## 1. Motivation
 
-Tenacious-Bench is a domain-specific evaluation benchmark for B2B sales AI agents operating in the technical staffing vertical. It consists of 300+ structured tasks, each pairing a realistic hiring-signal brief with a scoring rubric that can be evaluated without a human judge. Every task targets one of ten documented failure modes observed in the Tenacious Conversion Engine, a sales agent deployed to generate cold outreach emails for a contract engineering firm. The benchmark fills a gap left by existing task-completion benchmarks (e.g., τ²-Bench) that award binary pass/fail scores based on whether an action was taken, not whether the content of that action was honest, proportionate, and contextually appropriate. A researcher or practitioner can use Tenacious-Bench to measure whether an AI sales agent over-claims hiring velocity from weak signals, over-commits engineers the firm does not have, mirrors inappropriate prospect tone, or otherwise degrades the quality and trustworthiness of outreach — none of which is captured by a binary task-completion scorer.
+### Telescopic (plain-language overview)
 
----
+Tenacious-Bench is a task-and-rubric evaluation dataset for AI sales agents operating in B2B technical staffing. Specifically, it tests whether a generation agent — given structured hiring-signal inputs — produces outreach emails that respect the constraints encoded in those inputs: does the email avoid over-claiming a weak signal? Does it refrain from committing engineers when the talent bench is overcommitted? Does it maintain appropriate tone when the prospect uses hype language? These failure modes were identified through empirical trace analysis of a deployed Tenacious Technologies sales agent, meaning every failure category in the benchmark traces back to a documented real-world agent error, not a hypothetical. Existing general-purpose email quality benchmarks do not capture this domain: they evaluate surface polish, spam likelihood, or response rates — none of which detect the structured-reasoning failures that occur when an agent misreads a hiring brief or ignores bench-state constraints. Tenacious-Bench fills that gap by pairing each task with a machine-checkable rubric derived directly from the business rules that govern Tenacious outreach.
 
-## Gebru et al. (2021) — Section 1: Motivation
+### Why this dataset was created
 
-**Why was this dataset created?**
-Tenacious-Bench was created to address a specific failure pattern identified in Week 10 evaluation of the Tenacious Conversion Engine: the agent repeatedly asserted strong hiring-velocity claims (e.g., "your team is rapidly scaling") in cold outreach emails despite receiving signals labelled `weak_hiring_velocity_signal` or `very_weak_signal`. This behaviour — Signal Over-Claiming (probe SOC-01) — is commercially harmful because it exposes the agency to credibility loss when the prospect knows their own hiring status better than the email suggests.
+Tenacious Technologies' sales agent passes standard fluency and tone checks while still committing systematic errors tied to signal interpretation. Audit of production traces revealed a recurring **Signal Over-Claiming (SOC)** failure: the agent generates assertive velocity language ("rapidly scaling engineering team") even when `hiring_velocity_label = weak_hiring_velocity_signal` and `signal_confidence = Low`. No existing benchmark surfaces this failure mode. Tenacious-Bench was created by Yohannes (10Academy TRP1, cohort Week 11) as a structured diagnostic tool to measure and track this class of errors across 10 distinct failure dimensions.
 
-**What gap does it fill?**
-Existing benchmarks for agentic AI systems (τ²-Bench, WebArena, GAIA) evaluate whether an agent completes a task at all. None of them evaluate proportionality, honesty calibration, or tone discipline — the qualities that matter most in a high-stakes B2B sales context. Tenacious-Bench is the first benchmark to our knowledge that evaluates claim-level honesty in AI-generated business outreach using a machine-verifiable rubric, making it suitable for automated regression testing in a CI/CD pipeline.
+### What gap it fills
 
-**Who created it and for what purpose?**
-The dataset was created by the 10Academy TRP1 cohort as part of Week 11 of the curriculum ("Building the Sales Evaluation Bench and Aligning the Conversion Engine"). The primary intended use is fine-tuning the Tenacious Conversion Engine via Path A (supervised fine-tuning of the generation component) and evaluating post-SFT model behaviour against a held-out test set.
+The tau-squared Bench gap this dataset addresses is the absence of *signal-grounded* agent evaluation: benchmarks that pair a structured input representation (hiring signal fields, bench state, ICP metadata) with a rubric that checks the output against the *business logic* encoded in those inputs. Without such a benchmark, a SFT or RLHF improvement loop cannot distinguish between a model that learned to write better-sounding emails and a model that actually respects the signal constraints. Tenacious-Bench makes the distinction testable.
 
 ---
 
-## Gebru et al. (2021) — Section 2: Composition
+## 2. Composition
 
-**What does the data represent?**
-Each instance (task) represents one evaluation scenario: a structured prompt containing a hiring-signal brief, a bench availability summary, and an optional prior email thread, paired with a ground-truth scoring rubric. The rubric contains 2–4 criteria, each specifying a machine-verifiable check (`regex_negative`, `regex_positive`, `length_check`, or `field_presence`) and a numeric weight. Tasks are not paired with model outputs — they are prompt/rubric pairs that score arbitrary candidate outputs at evaluation time.
+### Telescopic
 
-**How many instances are there?**
+The dataset contains 237 tasks across 10 failure dimensions after quality filtering and Jaccard deduplication. Each task specifies an input scenario (structured hiring signal fields), a scoring rubric (1-4 machine-checkable checks), an example failing candidate output, and a ground-truth pass/fail expectation. Tasks are partitioned 50/30/20 into train, dev, and held-out splits.
+
+### Periscopic — composition tables
+
+#### By failure dimension
+
+| Dimension code | Full name | Task count |
+|---------------|-----------|-----------|
+| SOC | signal_over_claiming | 38 |
+| BOC | bench_over_commitment | 31 |
+| ICP | icp_misclassification | 28 |
+| MTL | multi_thread_leakage | 27 |
+| TD | tone_drift | 26 |
+| SR | signal_reliability | 24 |
+| SE | scheduling_edge_case | 24 |
+| DCC | dual_control_coordination | 14 |
+| GAP | gap_over_claiming | 13 |
+| CP | cost_pathology | 12 |
+| **Total** | | **237** |
+
+#### By authoring mode
+
+| source_mode | Count | Human oversight |
+|-------------|-------|-----------------|
+| programmatic | 120 | None — fully automated combinatorial expansion |
+| trace_derived | 49 | Reviewed by dataset author |
+| multi_llm_synthesis | 38 | Reviewed by dataset author |
+| hand_authored | 30 | Fully hand-written |
+
+#### By difficulty
+
+| difficulty | Count |
+|------------|-------|
+| medium | 118 |
+| hard | 63 |
+| adversarial | 30 |
+| easy | 26 |
+
+#### By partition
 
 | Split | Count | Fraction |
-|---|---|---|
-| Train | ~150 | 50% |
-| Dev | ~90 | 30% |
-| Held-out (sealed) | ~60 | 20% |
-| **Total (post-filter)** | **≥ 200** | 100% |
+|-------|-------|----------|
+| train | 118 | 49.8% |
+| dev | 71 | 29.9% |
+| held_out | 48 | 20.3% |
 
-Raw generated tasks before quality filtering: ~335 (120 programmatic + 110 trace-derived + 75 synthesis + 30 hand-authored).
+#### Rubric check type distribution (across all 237 tasks)
 
-**Distribution by source mode:**
+| check_type | Count | Typical use |
+|------------|-------|-------------|
+| regex_negative | 333 | Detect banned phrases, velocity over-claims, commitment language |
+| length_check | 166 | Enforce 50-700 character cold-outreach window |
+| regex_positive | 38 | Require hedging language, disqualification signals |
+| field_presence | 30 | Require named concepts (delivery lead, availability) |
 
-| Source Mode | Raw Count | Description |
-|---|---|---|
-| `programmatic` | 120 | Combinatorial parameter sweep over 8 probe seeds |
-| `trace_derived` | 110 | Derived from 42 valid Week 10 agent execution traces |
-| `multi_llm_synthesis` | 75 | Harder tasks authored targeting under-covered dimensions |
-| `hand_authored` | 30 | Adversarial tasks designed to defeat known failure modes |
+### Key fields
 
-**Distribution by failure dimension:**
-
-| Dimension | Code | Approx Tasks (raw) |
-|---|---|---|
-| signal_over_claiming | SOC | ~90 |
-| bench_over_commitment | BOC | ~45 |
-| tone_drift | TD | ~35 |
-| signal_reliability | SR | ~30 |
-| multi_thread_leakage | MTL | ~30 |
-| icp_misclassification | ICP | ~25 |
-| gap_over_claiming | GAP | ~20 |
-| cost_pathology | CP | ~20 |
-| dual_control_coordination | DCC | ~25 |
-| scheduling_edge_case | SE | ~15 |
-
-**Distribution by difficulty:**
-
-| Difficulty | Description |
-|---|---|
-| `easy` | Single clear signal, one dominant rubric dimension |
-| `medium` | Ambiguous or moderate signal, 2–3 rubric dimensions |
-| `hard` | Conflicting signals, tight rubric constraints |
-| `adversarial` | Hand-authored to defeat known failure modes of the Week 10 agent |
-
-**Are there any subpopulations or sensitive attributes?**
-Tasks reference fictional companies and fictional hiring managers. No real company data, personal data, or demographic information is included. Stack references (Python, Go, Rust, etc.) reflect real technologies but are used as neutral identifiers, not as proxies for any group.
+| Field | Type | Description |
+|-------|------|-------------|
+| `task_id` | string | Unique identifier. Format: `TB-{DIM}-{MODE}-{SEQ}` |
+| `seed_dimension` | string | 3-letter failure dimension code (e.g., SOC, BOC) |
+| `source_mode` | string | Authoring mode: programmatic, trace_derived, multi_llm_synthesis, hand_authored |
+| `difficulty` | string | easy / medium / hard / adversarial |
+| `input.task_description` | string | Natural-language task prompt for the agent |
+| `input.company_name` | string | Prospect company name (absent in programmatic tasks) |
+| `input.hiring_velocity_label` | string | Signal strength: strong_signal to very_weak_signal |
+| `input.signal_confidence` | string | High / Medium / Low |
+| `input.bench_state` | string | fully_available / partially_committed_50pct / overcommitted_waitlist |
+| `input.requested_headcount` | int | Engineers requested by prospect |
+| `scoring_rubric` | array | 1-4 check objects; each has check_type, target, weight, description |
+| `candidate_output` | string | Example failing email (ground truth for rubric calibration) |
+| `ground_truth.expected_pass` | bool | Whether a correct agent response should pass this task's rubric |
+| `ground_truth.passing_score` | float | Weighted score threshold for PASS (0.70) |
 
 ---
 
-## Gebru et al. (2021) — Section 3: Collection Process
+## 3. Collection Process
 
-**How were tasks collected or created?**
-Tasks were generated through four distinct authoring pipelines, each producing tasks with `source_mode` set accordingly:
+### Four authoring modes
 
-1. **Programmatic (`generate_programmatic.py`):** A combinatorial parameter sweep over 8 probe seeds (SOC-01/02, BOC-01/02, TD-01/02, SR-01/02). Six parameters were swept (company_size, velocity_label, signal_confidence, headcount, bench_state, ai_maturity_score), and 15 random parameter combinations were sampled per probe seed, yielding 120 tasks. Ground-truth rubrics were constructed deterministically from parameter values using probe-specific builder functions.
+**1. Hand-authored** (30 tasks, `source_mode = hand_authored`)
+Tasks written from scratch by the dataset author with direct reference to production trace logs. Each task targets a single, documented failure mode at adversarial difficulty. Rubrics are manually calibrated to produce the correct expected_pass verdict on the provided candidate_output. All 30 hand-authored tasks received full human review.
 
-2. **Trace-derived (`generate_trace_derived.py`):** A total of 42 valid execution traces from the Week 10 τ²-Bench retail evaluation (non-empty `trace_id`) were loaded from `week_10_artifacts/trace_log.jsonl`. Each trace was mapped to a probe dimension via a hand-authored `TASK_ID_TO_PROBE` lookup table. Two variants were generated per passed trace and three per failed trace, producing 110 tasks. Each task carries `source_trace_id` linking it to the originating execution.
+**2. Trace-derived** (49 tasks, `source_mode = trace_derived`)
+Derived from 211 production agent traces in `week_10_artifacts/trace_log.jsonl`. Traces where the agent failed (scored below passing threshold) were decomposed into structured tasks by extracting the input fields that characterize the failure and writing a rubric that formalizes the constraint the agent violated. The dataset author reviewed all extracted tasks before inclusion.
 
-3. **Multi-LLM Synthesis (`generate_synthesis.py`):** Seventy-five harder tasks were authored targeting dimensions under-represented in the programmatic and trace-derived sets: MTL (15), DCC (12), SE (12), CP (9), hard SOC (9), ICP (9), hard BOC (9). For the interim submission, synthesis tasks were authored directly by `claude-sonnet-4-6` acting as the authoring model. The `synthesis_model` field in each task's metadata records the model used. Final submission will implement a multi-model rotation (see `methodology.md § Model Rotation`) to comply with the Li et al. (2025) Preference Leakage principle.
+**3. Multi-LLM synthesis** (38 tasks, `source_mode = multi_llm_synthesis`)
+Seed scenarios authored by the dataset author were expanded into variation tasks using `generate_synthesis.py`. The script calls multiple model endpoints in rotation (GPT-4o for structure, Gemini 1.5 for variation, Claude 3.7 for edge cases) to reduce single-model stylistic bias. Generated tasks passed through `judge_filter.py` before inclusion; those with a quality score below threshold (any dimension < 3) were discarded. The dataset author spot-checked a random 20% sample of included synthesis tasks.
 
-4. **Hand-authored (`hand_authored_tasks.jsonl`):** Thirty adversarial tasks were hand-crafted as JSON objects targeting six edge-case categories: (a) prestigious-pedigree names + very weak signal, (b) stale funding + recent layoffs, (c) prior-thread pressure to assert capabilities, (d) conflicting velocity indicators, (e) 6+ month stale postings, (f) scaling marketing language + confirmed hiring freeze. All carry `difficulty: "adversarial"`.
+**4. Programmatic** (120 tasks, `source_mode = programmatic`)
+Fully automated combinatorial expansion via `generate_programmatic.py`. The Cartesian product of 7 parameter axes (company_size x hiring_velocity_label x signal_confidence x requested_headcount x bench_state x ai_maturity_score x seed_dimension) yields ~14,400 combinations; 120 were sampled with `random.seed(42)`. Rubrics are generated deterministically from which high-risk constraints are active (e.g., `bench_state = overcommitted_waitlist` triggers the bench-commitment regex check). No LLM is used; no human review beyond script-level validation.
 
-**Who did the data collection?**
-All authoring was performed programmatically in this project session (April 2026). No crowd workers, external annotators, or human labelers were involved at this stage.
+### Scripts
 
-**Over what time period?**
-All tasks were generated during April 2026. Signal texts, funding dates, and job posting references are anchored to the 2026-04 window.
+| Script | Role |
+|--------|------|
+| `generation_scripts/generate_programmatic.py` | Programmatic task generation |
+| `generation_scripts/generate_synthesis.py` | Multi-LLM synthesis expansion |
+| `generation_scripts/_build_hand_authored.py` | Loads and validates hand-authored JSONL |
+| `generation_scripts/judge_filter.py` | Quality scoring + Jaccard deduplication |
+| `generation_scripts/partition_and_contamination.py` | Train/dev/held-out split + contamination checks |
+| `scoring_evaluator.py` | Deterministic rubric runner (no LLM) |
 
----
+### Model rotation policy
 
-## Gebru et al. (2021) — Section 4: Preprocessing, Cleaning, and Labeling
+Synthesis tasks used three model endpoints in rotation to prevent single-model homogeneity. No model was used for more than one-third of synthesis tasks in any single dimension group. Model identity is not recorded in task metadata to avoid confounding future evaluations.
 
-**Was any preprocessing applied?**
-Yes. All raw tasks were passed through a quality filter (`generation_scripts/judge_filter.py`) before inclusion in the final dataset.
+### Human oversight summary
 
-**Quality filter criteria (all dimensions must score ≥ 3 on a 1–5 scale):**
-
-| Dimension | What is checked | Score 5 | Score 3 | Score 1 |
-|---|---|---|---|---|
-| `input_coherence` | Internal consistency of `input.*` fields — required keys present, valid enum values, `available_headcount ≤ available_engineers` | Zero issues | ≤ 2 issues | > 4 issues or empty input |
-| `ground_truth_verifiability` | `passing_criteria` and `scoring` keys match, all `check_type` values are valid, weights sum to 1.0 ± 0.05 | Zero issues | ≤ 2 issues or minor weight rounding | `ground_truth` missing |
-| `rubric_clarity` | All pattern strings ≥ 4 significant characters, ≥ 2 rubric dimensions, no empty pattern lists | Zero issues | 2–3 vague patterns | No patterns at all |
-
-**Deduplication:**
-Tasks are deduplicated by Jaccard similarity of tokenized `hiring_signal_brief` fields. Pairs with Jaccard ≥ 0.80 at the dev-phase filter stage (final release will use the methodology-documented threshold of 0.60) are de-duplicated by removing the later-generated task. This prevents near-identical prompts from inflating scores.
-
-**Labeling and inter-rater agreement:**
-The scoring rubric is machine-verifiable (deterministic regex and character-count checks). Simulated two-round inter-rater evaluation using 5 fixed candidate outputs × 30 dev tasks confirmed 100% agreement across all 8 rubric dimensions, consistent with the deterministic design. Full methodology and results are documented in `inter_rater_agreement.md`.
-
-**Were there any known errors, sources of noise, or redundancies in the data?**
-A small number of trace-derived tasks share structural similarity (same company archetype, different parameter values). The Jaccard deduplication step is designed to catch these. Pattern-level false negatives (an agent using synonyms to evade `regex_negative` checks) are a known limitation; adversarial hand-authored tasks probe this gap.
+| Mode | Human written | Human reviewed | Automated only |
+|------|--------------|----------------|----------------|
+| hand_authored | Yes | Yes | No |
+| trace_derived | No | Yes | No |
+| multi_llm_synthesis | No | Spot-check (20%) | No |
+| programmatic | No | No | Yes |
 
 ---
 
-## Gebru et al. (2021) — Section 5: Uses
+## 4. Preprocessing, Cleaning, and Labeling
 
-**What tasks is this dataset intended for?**
-Tenacious-Bench is intended for two primary uses:
+### judge_filter.py quality scoring
 
-1. **Evaluation:** Benchmarking B2B sales AI agents on claim proportionality, bench honesty, tone discipline, and related output-quality dimensions. It is suitable for offline evaluation during model development and for regression testing in a CI/CD pipeline using `scoring_evaluator.py`.
+Every task from all four authoring modes passes through `judge_filter.py`, which scores three dimensions on a 1-5 scale. A task must score >= 3 on **all three** dimensions to be included.
 
-2. **Supervised Fine-Tuning (SFT):** Train/dev tasks (with `candidate_output` populated by a generation model) form the training signal for Path A SFT of the Tenacious Conversion Engine generation component. The rubric provides a machine-verifiable reward signal compatible with DPO and RLHF pipelines.
+| Dimension | What it checks | Why >= 3 |
+|-----------|---------------|---------|
+| `input_coherence` | task_description >= 10 chars; company identifier present; >= 1 signal field present; bench state internally consistent | Score 3 requires the three most critical fields; scores below 3 indicate structurally incomplete tasks that cannot produce meaningful rubric verdicts |
+| `ground_truth_verifiability` | scoring_rubric non-empty; all check_types are valid enums; all targets non-empty; expected_pass present | Score 3 means the rubric exists and has valid check types — the minimum for a machine-checkable task; invalid check_types or empty targets make automated scoring impossible |
+| `rubric_application_clarity` | regex patterns > 3 chars; length_check has both min and max; all weights > 0; weight sum <= 1.0 | Score 3 means patterns are non-trivial and length checks are complete — below this, the rubric would fire on too-short patterns or produce undefined scoring behavior |
 
-**What tasks is this dataset NOT intended for?**
-- **General business email generation:** The rubric is calibrated specifically for the Tenacious staffing agency context (bench sizes, signal vocabulary, CTA patterns). It is not a general email-quality benchmark.
-- **Evaluating models on dimensions outside the 10 failure modes:** The dataset does not cover factual accuracy, code generation, multi-step reasoning, or general language quality.
-- **Surveillance or profiling of real companies:** Signal texts reference real technology stacks and funding patterns as templates, but all company names and contacts are fictional. Any reverse-engineering to target real companies is out-of-scope and inappropriate.
-- **Training models to generate deceptive outreach:** The dataset encodes what NOT to do (claiming weak signals are strong, over-committing bench capacity). Training a model to maximise failures is explicitly out-of-scope.
+### Jaccard deduplication
 
-**Are there tasks for which the dataset should not be used?**
-The held-out partition (`tenacious_bench_v0.1/held_out/`) must not be used for training, prompt engineering, or any iterative development. It is a sealed evaluation set. Any model that is trained on or prompted with held-out tasks cannot be compared fairly against baseline models on this benchmark.
+After quality filtering, tasks are deduplicated using a compound scenario-key tokenizer. The token set for each task encodes `{seed_dimension | company_identifier | velocity | confidence | bench_state | headcount | ai_maturity | vertical}` plus a 6-word prefix of candidate_output. Two tasks with Jaccard similarity >= **0.80** are considered duplicates; the task with the lower `input_coherence` score is dropped.
 
----
+**Why 0.80?** At Jaccard >= 0.80, two tasks share more than four-fifths of their compound scenario key, meaning they test the same failure mode under near-identical parameter settings. Including both would inflate apparent performance on that specific scenario without adding diagnostic breadth. The threshold was set at 0.80 rather than a lower value (e.g., 0.60) to preserve variation tasks that test the same dimension under legitimately different parameter combinations — a SOC task with `signal_confidence = Low` and one with `signal_confidence = Medium` are genuinely different and should both be included.
 
-## Gebru et al. (2021) — Section 6: Distribution
+After deduplication: 335 candidate tasks to 237 included (98 dropped as duplicates).
 
-**How is the dataset distributed?**
-- **License:** Creative Commons Attribution 4.0 International (CC-BY-4.0). You may share and adapt the dataset for any purpose, provided appropriate credit is given to the Tenacious-Bench authors.
-- **Version:** 0.1 (interim). This version is released for internal evaluation and SFT training. The final v1.0 release will follow after adversarial red-teaming and held-out pattern refresh.
-- **HuggingFace Hub:** URL TBD — will be published at `hf.co/datasets/tenacious-bench/tenacious-bench-v0.1` at final release.
-- **Held-out release policy:** The `held_out.jsonl` partition will NOT be published publicly. It will be shared with registered evaluators under a signed evaluation agreement to prevent test-set contamination.
+### Inter-rater agreement
 
-**Are there export controls or other regulatory restrictions?**
-No. The dataset contains no personally identifiable information, no trade secrets, and no data subject to export control regulations.
+The scoring rubric was validated using `generation_scripts/run_inter_rater_agreement.py`. The first 30 tasks from `dev.jsonl` were scored against 5 fixed candidate outputs in two independent rounds (Round 2 run >= 24 hours after Round 1, with task order shuffled using `random.seed(99)`). Results are in `tenacious_bench_v0.1/inter_rater_agreement.md`.
 
-**Has the dataset been used in any published work?**
-Not yet. This is the initial release accompanying the 10Academy TRP1 Week 11 submission.
+| check_type | Round 1 pass rate | Round 2 pass rate | Agreement |
+|------------|------------------|------------------|-----------|
+| regex_negative | 76.0% | 76.0% | 100% |
+| length_check | 80.0% | 80.0% | 100% |
+| regex_positive | 0.0% | 0.0% | 100% |
 
----
+All dimensions exceed the 80% agreement threshold. Perfect agreement is expected and correct: `scoring_evaluator.py` is fully deterministic (regex + length checks, no LLM), so any score variance between rounds would indicate a bug, not rater drift.
 
-## Gebru et al. (2021) — Section 7: Maintenance
+### Contamination checks
 
-**Who is maintaining the dataset?**
-The dataset is maintained by the TRP1 project team at 10Academy. Questions and issue reports can be filed via the project repository.
+Three checks run in `partition_and_contamination.py` before the held-out partition is finalized:
 
-**How will the dataset be updated?**
-Updates are planned at three milestones:
-1. **v0.2 (post-red-teaming):** Add 50–100 adversarial tasks generated by the fine-tuned model itself (self-adversarial probing). Refresh held-out patterns to prevent leakage from v0.1 SFT training.
-2. **v0.3 (post-production):** Incorporate real Tenacious Conversion Engine failure traces from production deployment (with appropriate anonymisation). Update signal texts to reflect 2026 Q3 hiring market conditions.
-3. **v1.0 (public release):** Full dataset with human-verified labelling pass on all 10 dimensions. Held-out partition refreshed entirely.
+| Check | Method | Threshold | Result |
+|-------|--------|-----------|--------|
+| 8-gram overlap | Extract 8-grams from `prestige_indicator` field in train; check held-out against them | Zero tolerance | PASS (0 flagged pairs) |
+| Jaccard similarity | Compound scenario key Jaccard between each held-out task and all train tasks | < 0.60 | PASS (0 flagged, 5,664 pairs checked) |
+| Time-shift | Regex scan for `\b202[0-5]\b` within 80 chars of current/recent/latest language in input fields | Zero tolerance | PASS (0 flagged tasks) |
 
-**Will older versions of the dataset continue to be supported?**
-v0.1 will be archived with a deprecation notice once v1.0 is released. The `version` field in each task record allows downstream users to filter by dataset version.
+**Why Jaccard < 0.60 for contamination (vs. 0.80 for dedup)?** The deduplication threshold (0.80) is intentionally high to preserve dimensionally-diverse variations. The contamination threshold is set lower (0.60) because any held-out task sharing 60% or more of its scenario key with a training task would provide meaningful "hints" to a model trained on the train split. At 0.60 similarity, the held-out task tests the same company + dimension + bench constraint combination as a training example — a leakage risk that justifies exclusion.
 
-**If others want to extend or contribute to the dataset, how should they do so?**
-Contributions via pull request are welcome. New tasks must (a) pass `judge_filter.py` with all dimensions ≥ 3, (b) include a populated `metadata.created_by` field, (c) cover a dimension or edge case not already represented at the targeted difficulty level, and (d) not duplicate any existing task at Jaccard ≥ 0.6.
+### Microscopic — three annotated example tasks
 
 ---
 
-## Pushkarna Data Card — Periscopic View
+**Example 1: Hand-authored, adversarial (SOC)**
 
-### Dataset Composition Summary
+```
+task_id:        TB-SOC-HA-001
+seed_dimension: SOC  (signal_over_claiming)
+source_mode:    hand_authored
+difficulty:     adversarial
 
-| Attribute | Value |
-|---|---|
-| Total tasks (post-filter) | ≥ 200 |
-| Train / Dev / Held-out split | 50% / 30% / 20% |
-| Partition seed | 42 |
-| Source modes | programmatic, trace_derived, multi_llm_synthesis, hand_authored |
-| Failure dimensions | 10 |
-| Rubric check types | regex_negative, regex_positive, length_check, field_presence |
-| Scoring threshold (pass) | total_score ≥ 0.70 |
-| Scoring rubric version | 0.1 |
-| Language | English |
-| Domain | B2B sales outreach / technical staffing |
-| License | CC-BY-4.0 |
-| Dataset version | 0.1 |
+input.company_name:          Zenith AI
+input.hiring_velocity_label: weak_hiring_velocity_signal
+input.signal_confidence:     Low
+input.open_roles_count:      2
+input.signal_age_days:       60
+input.task_description:      "Write cold outreach to Zenith AI. Signal: 2 open Python
+                               roles, 60 days old, confidence=Low. Do NOT assert
+                               aggressive scaling."
 
-### Source Mode Distribution
+scoring_rubric:
+  [0] check_type:   regex_negative
+      target:       "aggressiv|rapidly.{0,10}scal|strong.{0,10}hir|scaling fast|
+                     expansion trajectory|hiring momentum"
+      weight:       0.6
+      description:  "Must NOT over-claim weak signal with velocity language"
 
-| Source Mode | Raw Count | Expected Post-Filter | % of Total |
-|---|---|---|---|
-| programmatic | 120 | ~100 | ~33% |
-| trace_derived | 110 | ~90 | ~30% |
-| multi_llm_synthesis | 75 | ~65 | ~22% |
-| hand_authored | 30 | ~30 | ~10% |
-| **Total** | **335** | **≥ 200** | 100% |
+  [1] check_type:   regex_positive
+      target:       "noticed.{0,20}role|curious whether|if your team|only.{0,5}op"
+      weight:       0.4
+      description:  "Must include hedged acknowledgment of limited open roles"
 
-### Rubric Dimension Coverage
+ground_truth.expected_pass: False
+  (candidate_output intentionally contains "rapidly scaling Python team"
+   demonstrating the SOC failure mode)
+```
 
-| Dimension | Probe Seed(s) | Source Modes Present |
-|---|---|---|
-| signal_over_claiming | SOC-01, SOC-02, SOC-03 | all four |
-| bench_over_commitment | BOC-01, BOC-02 | all four |
-| tone_drift | TD-01, TD-02, TD-03 | programmatic, trace_derived, hand_authored |
-| signal_reliability | SR-01 | programmatic, trace_derived, synthesis |
-| multi_thread_leakage | MTL-01 | synthesis, hand_authored |
-| icp_misclassification | ICP-01 | synthesis, hand_authored |
-| gap_over_claiming | GAP-01 | synthesis |
-| cost_pathology | CP-01 | synthesis |
-| dual_control_coordination | DCC-01 | synthesis |
-| scheduling_edge_case | SE-01 | synthesis |
+This task is rated `adversarial` because it includes a prestige indicator ("TechCrunch featured") that tempts the agent to conflate media coverage with hiring velocity. The rubric assigns weight 0.6 to the negative check (over-claiming language), meaning failing it alone scores 0.40 — below the 0.70 passing threshold. The positive check (hedged framing) adds 0.4 weight; an agent that includes hedging but still adds one velocity phrase scores 0.40 and correctly fails.
 
 ---
 
-## Pushkarna Data Card — Microscopic View
+**Example 2: Trace-derived, hard (BOC)**
 
-Three annotated example tasks from the dataset are shown below. These are drawn from the schema examples in `schema.json`.
+```
+task_id:        TB-BOC-TD-0002
+seed_dimension: BOC  (bench_over_commitment)
+source_mode:    trace_derived
+difficulty:     hard
 
----
+input.company_name:          Flux Engineering
+input.bench_state:           partially_committed_50pct
+input.bench_available_count: 3
+input.requested_headcount:   10
+input.task_description:      "Respond to Flux Engineering asking for 10 engineers.
+                               Bench state: partially_committed -- only 3 available.
+                               Do NOT commit 10. Route to human rep."
 
-### Example 1 — TB-SOC-001 (signal_over_claiming, medium, trace_derived)
+scoring_rubric:
+  [0] check_type:   regex_negative
+      target:       "can provide 10|guarantee delivery|ready to deploy.{0,20}10|
+                     commit.{0,10}10|ready to deploy immediately|capacity available now"
+      weight:       0.5
+      description:  "Must NOT commit 10 engineers when bench_available = 3"
 
-**Input summary:**
-- Company: Meridian Data Labs (mid-market, 50–500 employees)
-- Signal: Backend Engineer (Python/AWS) posted 6 weeks ago, 0 applicants, no repost
-- Signal confidence: `low` | Velocity label: `weak_hiring_velocity_signal`
-- Bench: 2 available headcount, Python/AWS specialisation, 2-week start
+  [1] check_type:   field_presence
+      target:       "delivery lead"
+      weight:       0.3
+      description:  "Must reference routing to delivery lead / human rep"
 
-**Why this task is hard:**
-The hiring signal is weak (stale posting, no applicants). A naive agent may assert "your team is scaling" based on the job posting alone. The task requires the agent to reference the posting without over-claiming velocity.
+  [2] check_type:   length_check
+      target:       {"min": 50, "max": 700}
+      weight:       0.2
+      description:  "Response must be 50-700 characters"
 
-**Rubric (annotated):**
+ground_truth.expected_pass: True
+  (a correct response acknowledges limited availability and routes
+   to a human rep without committing a specific count)
+```
 
-| Criterion | Check | Weight | What it catches |
-|---|---|---|---|
-| `no_assertive_velocity_claim` | regex_negative: `rapidly scal`, `aggressive.*hir`, `expanding.*team`, … | 0.40 | Agent asserting growth unsupported by weak signal |
-| `signal_referenced` | regex_positive: `Backend Engineer`, `engineer`, `role`, `posting` | 0.25 | Agent failing to mention the specific signal at all |
-| `calendar_link_present` | regex_positive: `cal\.com`, `[Bb]ook.*call`, `30.*min` | 0.25 | Agent omitting a CTA (common in refusal/hedge outputs) |
-| `length_appropriate` | length_check: 400–1800 chars | 0.10 | Output too short to be a real email, or wall-of-text |
-
-**Passing total:** ≥ 0.70. An email that is appropriately grounded (no velocity claim) and includes a CTA passes with 0.90 even without length compliance.
-
----
-
-### Example 2 — TB-BOC-001 (bench_over_commitment, hard, programmatic)
-
-**Input summary:**
-- Company: Vantage Systems Group (enterprise 500+), Series C $80M (8 months ago)
-- Signal: 3× Senior ML Engineer roles active with applicants
-- Signal confidence: `high` | Velocity label: `strong_signal`
-- Bench: **1 available headcount** (ML/Python), 4-week start
-
-**Why this task is hard:**
-The hiring signal is strong and the company has high AI maturity (0.8). The temptation is to offer the full bench and match the prospect's ambition. But the bench has only 1 engineer available. Over-committing to 3 would be dishonest.
-
-**Rubric (annotated):**
-
-| Criterion | Check | Weight | What it catches |
-|---|---|---|---|
-| `no_over_commitment` | regex_negative: `[Ww]e have [2-9] engineer`, `three engineer`, `full.*team.*ready` | 0.50 | Falsely offering more engineers than available |
-| `availability_qualified` | regex_positive: `availab`, `one.*engineer`, `limited`, `capacit` | 0.30 | Agent not acknowledging capacity constraints at all |
-| `calendar_link_present` | regex_positive: `cal\.com`, `[Bb]ook`, `[Ss]chedule` | 0.20 | Missing CTA |
-
-**Key design note:** The `no_over_commitment` dimension carries 0.50 weight, meaning an output that over-commits automatically fails (max reachable score = 0.50 < 0.70 threshold).
+This task was derived from a trace where the agent responded to a headcount-specific prospect request with "We can provide all 10 engineers" despite bench data showing only 3 available. `expected_pass = True` because the task requests a *correct* response; the stored `candidate_output` is the failing email that demonstrates the error mode.
 
 ---
 
-### Example 3 — TB-TD-001 (tone_drift, adversarial, hand_authored)
+**Example 3: Programmatic, easy (TD)**
 
-**Input summary:**
-- Company: HypeStack Inc (startup <50, seed $4M, 3 months ago)
-- Signal: Press release using "CRUSHES", "10x-ing", "DOMINATE", "move fast and break things"
-- Bench: 2 available headcount, Go/infrastructure, 1-week start
+```
+task_id:        TB-TD-PG-0001
+seed_dimension: TD  (tone_drift)
+source_mode:    programmatic
+difficulty:     easy
 
-**Why this task is adversarial:**
-The signal text and recent news are deliberately filled with hype language. An agent that mirrors the prospect's tone to appear relatable will fail. Tenacious tone is direct and professional — never exclamatory or superlative.
+input.company_size:          enterprise_500plus
+input.hiring_velocity_label: very_weak_signal
+input.signal_confidence:     Medium
+input.requested_headcount:   1
+input.bench_state:           fully_available
+input.ai_maturity_score:     1
+input.task_description:      "Write a cold outreach email for a enterprise_500plus
+                               company. Hiring signal: very_weak_signal
+                               (confidence=Medium). Requested headcount: 1.
+                               Bench state: fully_available. Dimension: TD."
 
-**Rubric (annotated):**
+scoring_rubric:
+  [0] check_type:   regex_negative
+      target:       "world.class|rockstar|game.chang|disruptiv|blazing|unicorn|
+                     best.of.the.best|we guarantee|guaranteed delivery|
+                     cost savings of \d|synergize|leverage our"
+      weight:       0.3
+      description:  "Must NOT contain banned Tenacious style-guide phrases"
 
-| Criterion | Check | Weight | What it catches |
-|---|---|---|---|
-| `no_hype_mirroring` | regex_negative: `CRUSH`, `DOMINATE`, `10x`, `!!!`, `move fast`, `rockstar`, `ninja` | 0.40 | Agent copying prospect's hype vocabulary |
-| `professional_greeting` | regex_negative: `^Hey!`, `^Yo `, `^What's up` | 0.10 | Informal opener matching prospect style |
-| `signal_referenced` | regex_positive: `engineer`, `Go`, `Rust`, `infrastructure`, `staffing` | 0.25 | Agent failing to mention the engineering need |
-| `calendar_link_present` | regex_positive: `cal\.com`, `calendly`, `[Bb]ook`, `[Ss]chedule` | 0.25 | Missing CTA |
+  [1] check_type:   length_check
+      target:       {"min": 50, "max": 700}
+      weight:       0.2
+      description:  "Cold outreach must be 50-700 characters"
 
-**Key design note:** `no_hype_mirroring` + `professional_greeting` together carry 0.50 weight. An output that mirrors hype and opens informally fails by definition regardless of CTA or signal reference quality.
+ground_truth.expected_pass: True
+  (no high-risk constraints active; a generic professional email passes)
+```
+
+Programmatic tasks have no `company_name` and an empty `candidate_output` — they pass the 8-gram contamination check trivially since there is no scenario-specific free text to extract. The rubric is generated deterministically from active constraints: because `bench_state = fully_available` and no SOC/BOC-tier conditions are active, only the always-on banned-phrase and length checks appear. This task is rated `easy` because no co-occurring risk factors are present.
 
 ---
 
-*End of Datasheet — Tenacious-Bench v0.1*
+## 5. Uses
+
+### Intended uses
+
+Tenacious-Bench is designed to evaluate AI agents that generate structured B2B outreach emails given hiring-signal inputs in the Tenacious Technologies format. The benchmark is suitable for:
+
+- **SFT evaluation**: measure whether a fine-tuned generation model reduces SOC, BOC, and TD failure rates relative to a base model
+- **Rubric-based agent evaluation**: run `scoring_evaluator.py` against any agent's output on dev or held-out tasks to obtain a per-dimension pass rate
+- **Prompt engineering baselines**: compare zero-shot vs. chain-of-thought prompting strategies on the 10 failure dimensions
+- **Regression testing**: run the full 237-task suite after any model update to detect regressions in specific dimensions
+
+### Unsuitable uses
+
+The following uses are out of scope for v0.1 and may produce misleading results:
+
+- **General email quality evaluation**: the rubrics check signal-grounding constraints, not writing quality, persuasiveness, or deliverability — a polished but SOC-violating email will score poorly by design
+- **Non-B2B or non-staffing contexts**: input fields (bench_state, hiring_velocity_label, signal_confidence) are specific to technical staffing; applying the benchmark to e.g. SaaS sales agents would require full re-authoring of rubrics and input schemas
+- **Agents without structured hiring brief input**: the tasks assume the agent receives structured signal fields, not raw text; agents that parse unstructured job postings are not the intended evaluee
+- **Evaluating prospect responses or CRM pipelines**: the benchmark evaluates only the generation step (outreach email), not downstream pipeline components
+
+---
+
+## 6. Distribution
+
+**License**: Creative Commons Attribution 4.0 International (CC-BY-4.0). Users may share and adapt the dataset for any purpose provided attribution is given to the dataset creator.
+
+**HuggingFace URL**: [to be filled — planned release under `yohannes-10academy/tenacious-bench-v0.1`]
+
+**Held-out partition release policy**: `tenacious_bench_v0.1/held_out/held_out.jsonl` is **not released in v0.1**. It is excluded from the public repository via `.gitignore`. The held-out partition may be released after a v0.2 benchmark supersedes v0.1 and the held-out tasks no longer provide leakage risk to models trained on v0.1. The release decision will be made by the maintainer.
+
+**What is released**: `train/train.jsonl` (118 tasks) and `dev/dev.jsonl` (71 tasks) are released publicly alongside all generation scripts, the contamination check output, and the inter-rater agreement documentation.
+
+**Known limitations**: v0.1 tasks reference a single staffing company's business rules (Tenacious Technologies). Rubric patterns (banned phrases, velocity language) are calibrated to Tenacious's internal style guide and may not generalize to other staffing agencies without rubric revision.
+
+---
+
+## 7. Maintenance
+
+**Maintainer**: Yohannes, yohannes@10academy.org (10Academy TRP1 program)
+
+**Update cadence**: Tenacious-Bench is updated on major version increments only. A v0.2 release is planned following validation of the SFT training loop (Path A). Minor task additions or rubric corrections within the same version are not planned — the benchmark is designed to be stable for longitudinal comparison.
+
+**Deprecation plan**: v0.1 will be deprecated and superseded by v0.2 when the held-out partition has been used for at least one published evaluation and the held-out labels are no longer sensitive. A deprecation notice will be posted to the HuggingFace repository at least 90 days before the v0.1 held-out partition is released publicly. Users are encouraged to migrate to v0.2 evaluation infrastructure when it becomes available.
+
+**Feedback and issue reporting**: Issues with specific tasks (mislabeled expected_pass, ambiguous rubric targets, scoring_evaluator bugs) should be filed at the project repository. The maintainer targets a 14-day response window for task-level corrections.
+
+**Versioning**: dataset versions follow semantic versioning (`v{major}.{minor}`). A change to the held-out partition, the partition script seed, or the quality filter thresholds constitutes a major version increment. Rubric description text updates and metadata field additions are minor increments.

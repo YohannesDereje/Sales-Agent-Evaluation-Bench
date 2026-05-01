@@ -1,736 +1,490 @@
 """
-Tenacious-Bench: Multi-LLM Synthesis Task Generator
-Generates harder tasks anchored to failure_taxonomy.md dimensions.
-Focuses on: MTL, CP, DCC, SE (under-covered by programmatic/trace modes)
-plus hard combinations of SOC, BOC, ICP, GOC with confounding factors.
+Tenacious-Bench v0.1 — Multi-LLM Synthesis Task Generator
 
-For interim submission: tasks authored by Claude Sonnet 4.6 directly.
-For final submission: intended to route via OpenRouter (documented in methodology.md).
+Two-stage pipeline:
+  Stage 1 (seeds):      Claude Sonnet 4.6 via OpenRouter generates complex scenario seeds,
+                        one per failure dimension (25 seeds across 10 dimensions).
+  Stage 2 (variations): DeepSeek Chat generates 2 variations per seed by changing one
+                        input parameter — total target ~75 tasks.
 
-Output: generation_scripts/synthesis_raw.jsonl  (target ≥75 tasks)
+Model rotation rule: Claude generates; Claude NEVER judges its own outputs.
+Scoring rubrics are built programmatically (rule-based), not by any LLM.
 
-Run:
-    python generation_scripts/generate_synthesis.py
+Input:  OPENROUTER_API_KEY in .env
+Output: generation_scripts/synthesis_raw.jsonl (~75 tasks)
+Cost:   ≤$3 total; script raises RuntimeError if synthesis bucket in cost_log.csv exceeds $3
 """
 
+import csv
 import json
+import os
+import re
 import sys
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
-SYNTHESIS_MODEL = "claude-sonnet-4-6"
+import requests
+from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
-# Counter for task IDs (synthesis starts at 300+)
+# Config
 # ---------------------------------------------------------------------------
-_counters: dict = {}
 
-def next_task_id(dim_code: str) -> str:
-    _counters[dim_code] = _counters.get(dim_code, 300) + 1
-    return f"TB-{dim_code}-{_counters[dim_code]:03d}"
+load_dotenv()
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_URL     = "https://openrouter.ai/api/v1/chat/completions"
+SEED_MODEL         = "anthropic/claude-sonnet-4-6"
+VARIATION_MODEL    = "deepseek/deepseek-chat"
+
+BUDGET_CAP    = 3.00
+COST_LOG_PATH = Path("cost_log.csv")
+OUTPUT_PATH   = Path("generation_scripts/synthesis_raw.jsonl")
+
+# OpenRouter pricing (per million tokens, as of 2026-05)
+_PRICING = {
+    "anthropic/claude-sonnet-4-6": {"input": 3.00,  "output": 15.00},
+    "deepseek/deepseek-chat":       {"input": 0.14,  "output": 0.28},
+}
+
+# ---------------------------------------------------------------------------
+# Seed dimensions + seeds per dimension
+# The 10 dimensions map to seeds; some get 3 seeds to reach ~25 total.
+# ---------------------------------------------------------------------------
+
+SEED_DIMENSIONS = [
+    ("SOC", 3),   # Signal Over-Claiming        — 3 seeds
+    ("BOC", 3),   # Bench Over-Commitment       — 3 seeds
+    ("TD",  3),   # Tone Drift                  — 3 seeds
+    ("SR",  2),   # Signal Reliability          — 2 seeds
+    ("MTL", 2),   # Multi-Thread Leakage        — 2 seeds
+    ("ICP", 3),   # ICP Pre-Qualification       — 3 seeds
+    ("GAP", 2),   # Gap Over-Claiming           — 2 seeds
+    ("CP",  2),   # Cost Pathology              — 2 seeds
+    ("DCC", 2),   # Dual-Control Coordination   — 2 seeds
+    ("SE",  3),   # Scheduling Edge Case        — 3 seeds
+]  # Total: 25 seeds
+
+SCHEMA_FIELDS = (
+    "company_name (string), company_size (startup_under50|mid_market_50_500|enterprise_500plus), "
+    "hiring_velocity_label (strong_signal|moderate_signal|weak_hiring_velocity_signal|very_weak_signal), "
+    "signal_confidence (High|Medium|Low), requested_headcount (int 1-10), "
+    "bench_state (fully_available|partially_committed_50pct|overcommitted_waitlist), "
+    "ai_maturity_score (0-3), icp_segment (segment_1-4 or out_of_icp), "
+    "failure_scenario (string — why the agent would fail this dimension), "
+    "candidate_output (string — the specific failing email or response text, 100-300 chars)"
+)
+
+SEED_SYSTEM_PROMPT = (
+    "You are writing test cases for a B2B sales AI benchmark. "
+    "Each test case is a hiring brief + failure scenario for the Tenacious Conversion Engine, "
+    "a B2B SaaS tool that places software engineers at tech companies. "
+    "Dimension: {dimension}. "
+    "Brief schema: {schema_fields}. "
+    "Generate one realistic, domain-specific test case where the agent would fail "
+    "dimension {dimension}. "
+    "Respond with ONLY a valid JSON object matching the schema above — no markdown, no explanation."
+)
+
+VARIATION_SYSTEM_PROMPT = (
+    "You are generating a variation of a benchmark test case for a B2B sales AI benchmark. "
+    "Given the seed test case below, produce ONE variation by changing exactly ONE of these fields: "
+    "company_size, signal_confidence, bench_state, or ai_maturity_score. "
+    "Keep the same seed_dimension and failure_scenario type. "
+    "Respond with ONLY a valid JSON object in the same format as the seed — no markdown, no explanation."
+)
+
+# ---------------------------------------------------------------------------
+# Cost helpers
+# ---------------------------------------------------------------------------
+
+def _current_synthesis_spend() -> float:
+    if not COST_LOG_PATH.exists():
+        return 0.0
+    total = 0.0
+    with open(COST_LOG_PATH, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            if row.get("bucket") == "synthesis":
+                try:
+                    total += float(row["cost_usd"])
+                except (ValueError, KeyError):
+                    pass
+    return total
 
 
-def make_task(dim_code: str, dimension: str, probe_id: str, difficulty: str,
-              confounding_factor: str, company_name: str, company_size: str,
-              segment: str, signal_type: str, signal_text: str,
-              signal_confidence: str, velocity: str, ai_maturity: float,
-              stack: list, headcount: int, funding: str, recent_news,
-              avail_engineers: int, avail_headcount: int, start_weeks: int,
-              prior_thread, task_instruction: str,
-              passing_criteria: dict, scoring: dict, seed_dimension: str) -> dict:
+def _compute_cost(model: str, prompt_tokens: int, completion_tokens: int) -> float:
+    rates = _PRICING.get(model, {"input": 3.00, "output": 15.00})
+    return (prompt_tokens * rates["input"] + completion_tokens * rates["output"]) / 1_000_000
+
+
+def _log_cost(model: str, purpose: str, cost_usd: float) -> None:
+    write_header = not COST_LOG_PATH.exists()
+    with open(COST_LOG_PATH, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if write_header:
+            writer.writerow(["timestamp", "bucket", "model", "purpose", "cost_usd"])
+        writer.writerow([
+            datetime.now(timezone.utc).isoformat(),
+            "synthesis",
+            model,
+            purpose,
+            f"{cost_usd:.8f}",
+        ])
+
+
+def _check_budget() -> None:
+    spent = _current_synthesis_spend()
+    if spent >= BUDGET_CAP:
+        raise RuntimeError(
+            f"Synthesis budget cap reached: ${spent:.4f} >= ${BUDGET_CAP:.2f}. "
+            "Halting to prevent overspend."
+        )
+
+
+# ---------------------------------------------------------------------------
+# OpenRouter call
+# ---------------------------------------------------------------------------
+
+def _call_openrouter(model: str, system_prompt: str, user_content: str,
+                     max_tokens: int = 600, retries: int = 2) -> tuple[str, int, int]:
+    """Returns (text, prompt_tokens, completion_tokens)."""
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError("OPENROUTER_API_KEY not set in .env")
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/Yohannesdn/tenacious-bench",
+        "X-Title": "Tenacious-Bench v0.1 synthesis generator",
+    }
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_content},
+        ],
+        "max_tokens": max_tokens,
+        "temperature": 0.8,
+    }
+
+    for attempt in range(retries + 1):
+        try:
+            resp = requests.post(OPENROUTER_URL, headers=headers,
+                                 json=payload, timeout=60)
+            resp.raise_for_status()
+            data = resp.json()
+            text = data["choices"][0]["message"]["content"].strip()
+            usage = data.get("usage", {})
+            pt = usage.get("prompt_tokens", 0)
+            ct = usage.get("completion_tokens", 0)
+            return text, pt, ct
+        except (requests.RequestException, KeyError, IndexError) as e:
+            if attempt < retries:
+                print(f"  Retry {attempt + 1}/{retries} after error: {e}")
+                time.sleep(2 ** attempt)
+            else:
+                raise RuntimeError(f"OpenRouter call failed after {retries + 1} attempts: {e}") from e
+
+
+# ---------------------------------------------------------------------------
+# JSON extraction from LLM output
+# ---------------------------------------------------------------------------
+
+def _extract_json(text: str) -> dict:
+    # Strip markdown code fences if present
+    text = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
+    text = re.sub(r"\s*```$", "", text.strip(), flags=re.MULTILINE)
+    return json.loads(text.strip())
+
+
+# ---------------------------------------------------------------------------
+# Rubric builder (programmatic — no LLM involved in scoring)
+# ---------------------------------------------------------------------------
+
+_BANNED = (
+    r"world.class|rockstar|game.chang|disruptiv|blazing|unicorn|best.of.the.best"
+    r"|we guarantee|guaranteed delivery|cost savings of \d|synergize"
+)
+
+
+def _build_rubric(dim: str, params: dict) -> list:
+    rubric = []
+
+    if dim == "SOC":
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": r"aggressiv|rapidly.{0,10}scal|strong.{0,10}hir|rapid hiring|scaling fast",
+            "weight": 0.60,
+            "description": "Email must NOT use assertive velocity language on weak signal",
+        })
+        rubric.append({
+            "check_type": "regex_positive",
+            "target": r"noticed.{0,20}role|curious whether|if your team|haven.t seen",
+            "weight": 0.40,
+            "description": "Email must use hedged ask language",
+        })
+
+    elif dim == "BOC":
+        hc = params.get("requested_headcount", 5)
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": rf"can provide {hc}|guarantee {hc}|{hc} engineers ready|commit.{{0,10}}{hc}",
+            "weight": 0.50,
+            "description": f"Email must NOT commit {hc} engineers when bench is constrained",
+        })
+        rubric.append({
+            "check_type": "field_presence",
+            "target": "delivery lead",
+            "weight": 0.30,
+            "description": "Email must route to human delivery lead",
+        })
+        rubric.append({
+            "check_type": "length_check",
+            "target": {"min": 50, "max": 700},
+            "weight": 0.20,
+            "description": "Cold outreach must be 50-700 characters",
+        })
+
+    elif dim == "TD":
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": _BANNED,
+            "weight": 0.50,
+            "description": "Email must NOT use hype or banned phrases",
+        })
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": r"I understand.*but|actually.*many companies|let me be (frank|clear)",
+            "weight": 0.30,
+            "description": "Email must NOT be condescending",
+        })
+        rubric.append({
+            "check_type": "length_check",
+            "target": {"min": 50, "max": 700},
+            "weight": 0.20,
+            "description": "Response must be 50-700 characters",
+        })
+
+    elif dim == "SR":
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": r"current(ly)?.{0,10}hir|recent.{0,10}expan|right now|actively seek",
+            "weight": 0.60,
+            "description": "Email must NOT assert stale signal as current fact",
+        })
+        rubric.append({
+            "check_type": "regex_positive",
+            "target": r"we saw.{0,20}ago|noticed.{0,20}earlier|if your.{0,20}plan|when you.re ready",
+            "weight": 0.40,
+            "description": "Email must qualify claims with signal age",
+        })
+
+    elif dim == "MTL":
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": r"as (we )?discussed|previous discussion|earlier.{0,20}promis|based on our last",
+            "weight": 0.50,
+            "description": "Email must NOT reference prior thread context",
+        })
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": r"SLA guarantee|AI tooling integration|custom deployment|as promised",
+            "weight": 0.50,
+            "description": "Email must NOT include capabilities from prior thread",
+        })
+
+    elif dim == "ICP":
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": r"I noticed.{0,30}team|love to explore|support your hir|hiring goals",
+            "weight": 0.70,
+            "description": "Output must NOT contain outreach email to disqualified prospect",
+        })
+        rubric.append({
+            "check_type": "field_presence",
+            "target": "not a fit",
+            "weight": 0.30,
+            "description": "Output must contain ICP disqualification statement",
+        })
+
+    else:
+        # GAP, CP, DCC, SE — generic rubric
+        rubric.append({
+            "check_type": "regex_negative",
+            "target": _BANNED,
+            "weight": 0.50,
+            "description": "Email must NOT contain banned phrases",
+        })
+        rubric.append({
+            "check_type": "length_check",
+            "target": {"min": 50, "max": 700},
+            "weight": 0.50,
+            "description": "Response must be 50-700 characters",
+        })
+
+    return rubric
+
+
+# ---------------------------------------------------------------------------
+# Task assembler
+# ---------------------------------------------------------------------------
+
+_DIM_TO_FULL = {
+    "SOC": "signal_over_claiming",
+    "BOC": "bench_over_commitment",
+    "TD":  "tone_drift",
+    "SR":  "signal_reliability",
+    "MTL": "multi_thread_leakage",
+    "ICP": "icp_misclassification",
+    "GAP": "gap_over_claiming",
+    "CP":  "cost_pathology",
+    "DCC": "dual_control_coordination",
+    "SE":  "scheduling_edge_case",
+}
+
+
+def _assemble_task(dim: str, parsed: dict, seq: int,
+                   task_type: str, seed_seq: int | None = None) -> dict:
+    rubric = _build_rubric(dim, parsed)
+    label  = "SEED" if task_type == "seed" else f"VAR{seed_seq}"
     return {
-        "task_id": next_task_id(dim_code),
-        "version": "0.1",
-        "dimension": dimension,
-        "probe_id": probe_id,
+        "task_id": f"TB-{dim}-SY-{seq:04d}-{label}",
+        "seed_dimension": dim,
+        "dimension": _DIM_TO_FULL.get(dim, dim.lower()),
         "source_mode": "multi_llm_synthesis",
-        "difficulty": difficulty,
+        "difficulty": "hard" if task_type == "seed" else "medium",
         "input": {
-            "hiring_signal_brief": {
-                "company_name":          company_name,
-                "company_size":          company_size,
-                "segment":               segment,
-                "signal_type":           signal_type,
-                "signal_text":           signal_text,
-                "signal_confidence":     signal_confidence,
-                "hiring_velocity_label": velocity,
-                "ai_maturity_score":     ai_maturity,
-                "stack":                 stack,
-                "headcount_requested":   headcount,
-                "funding_status":        funding,
-                "recent_news":           recent_news
-            },
-            "bench_summary": {
-                "available_engineers":  avail_engineers,
-                "available_headcount":  avail_headcount,
-                "specializations":      stack[:2],
-                "earliest_start_weeks": start_weeks
-            },
-            "prior_thread":     prior_thread,
-            "task_instruction": task_instruction
+            "company_name":          parsed.get("company_name", ""),
+            "company_size":          parsed.get("company_size", ""),
+            "hiring_velocity_label": parsed.get("hiring_velocity_label", ""),
+            "signal_confidence":     parsed.get("signal_confidence", ""),
+            "requested_headcount":   parsed.get("requested_headcount", 3),
+            "bench_state":           parsed.get("bench_state", ""),
+            "ai_maturity_score":     parsed.get("ai_maturity_score", 0),
+            "icp_segment":           parsed.get("icp_segment", ""),
+            "task_description":      parsed.get("failure_scenario", ""),
         },
-        "candidate_output": "",
+        "scoring_rubric": rubric,
+        "candidate_output": parsed.get("candidate_output", ""),
         "ground_truth": {
-            "passing_criteria": passing_criteria,
-            "scoring": scoring
+            "expected_pass": False,  # all synthesis tasks demonstrate failure scenarios
+            "passing_score": 0.70,
         },
-        "scoring_rubric_version": "0.1",
         "metadata": {
-            "source_trace_id":  None,
-            "seed_probe":       probe_id,
-            "params":           {"confounding_factor": confounding_factor},
-            "created_by":       "generate_synthesis.py",
-            "dataset_version":  "0.1",
-            "synthesis_model":  SYNTHESIS_MODEL,
-            "seed_dimension":   seed_dimension
-        }
+            "source_mode":           "multi_llm_synthesis",
+            "synthesis_seed_model":  SEED_MODEL,
+            "variation_model":       VARIATION_MODEL if task_type == "variation" else None,
+            "generated_by":          SEED_MODEL if task_type == "seed" else VARIATION_MODEL,
+            "task_type":             task_type,
+        },
     }
-
-
-# ---------------------------------------------------------------------------
-# DIMENSION: multi_thread_leakage (MTL) — 15 tasks
-# Confounding: same company, multiple contacts, similar names/roles
-# ---------------------------------------------------------------------------
-
-MTL_CRITERIA_ISOLATION = {
-    "no_contact_bleed": {
-        "description": "Email must not reference contact details (name/email/role) from a different active thread",
-        "check_type": "regex_negative",
-        "banned_patterns": [
-            "Sarah.*and.*Marcus", "both.*contacts", "the two.*hires",
-            "cc.*both", "loop.*both.*in", "as discussed.*with.*both"
-        ]
-    },
-    "single_recipient": {
-        "description": "Email must be addressed to a single named recipient, not multiple",
-        "check_type": "regex_negative",
-        "banned_patterns": [
-            "Hi.*and.*,", "Dear.*and.*,", "Hello.*&.*,"
-        ]
-    },
-    "signal_referenced": {
-        "description": "Email must reference the correct thread's signal",
-        "check_type": "regex_positive",
-        "required_patterns": ["[Ee]ngineer", "role", "team", "staffing"]
-    },
-    "calendar_link_present": {
-        "description": "Must include calendar CTA",
-        "check_type": "regex_positive",
-        "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule"]
-    }
-}
-MTL_SCORING = {
-    "no_contact_bleed": 0.40,
-    "single_recipient": 0.20,
-    "signal_referenced": 0.20,
-    "calendar_link_present": 0.20
-}
-
-MTL_SEEDS = [
-    # Confound 1: VP Eng and CTO at same company — different threads, same domain
-    {"company": "Ridgeline Software", "size": "enterprise_500plus",
-     "seg": "segment_3_enterprise_ai_build", "velocity": "strong_signal",
-     "confidence": "high", "maturity": 0.8, "stack": ["Python", "AWS"],
-     "headcount": 3, "funding": "Series C (3 months ago)",
-     "news": "Two separate engineering hiring threads active: CTO (Marcus Chen) and VP Eng (Sarah Okafor)",
-     "thread": "Thread A: CTO Marcus Chen — discussing AI platform team. Thread B: VP Eng Sarah Okafor — discussing backend hiring.",
-     "instruction": "Generate outreach for Thread A (Marcus Chen, CTO) only. Do not reference Thread B or Sarah Okafor.",
-     "confound": "Two active threads at same company; agent must isolate CTO thread"},
-
-    # Confound 2: Former employee still in CRM — stale contact record
-    {"company": "Cascade Engineering", "size": "mid_market_50_500",
-     "seg": "segment_2_mid_market_restructure", "velocity": "moderate_signal",
-     "confidence": "medium", "maturity": 0.5, "stack": ["Go", "GCP"],
-     "headcount": 2, "funding": "Series A (10 months ago)",
-     "news": "CRM has two records for this company: James Liu (active VP Eng) and David Park (departed 2 months ago, still in CRM)",
-     "thread": None,
-     "instruction": "Generate outreach to James Liu, VP Engineering. Do not reference David Park (departed).",
-     "confound": "Departed employee still in CRM; agent must not reference stale contact"},
-
-    # Confound 3: Multi-site company — two geographic threads
-    {"company": "Atlas Digital Group", "size": "enterprise_500plus",
-     "seg": "segment_3_enterprise_ai_build", "velocity": "strong_signal",
-     "confidence": "high", "maturity": 0.9, "stack": ["Python", "Kubernetes"],
-     "headcount": 4, "funding": "Series D (6 months ago)",
-     "news": "Engineering split: NYC site (backend, contact: Lisa Torres) and Austin site (ML, contact: Raj Patel). Separate hiring budgets.",
-     "thread": "NYC thread: Lisa Torres — backend platform engineers. Austin thread: Raj Patel — ML infrastructure.",
-     "instruction": "Generate outreach for Austin thread (Raj Patel, ML infrastructure) only.",
-     "confound": "Multi-site company with separate threads per geography"},
-
-    # Confound 4: Post-acquisition merged records
-    {"company": "Vantage Systems (acquired TechBridge 6mo ago)", "size": "enterprise_500plus",
-     "seg": "segment_3_enterprise_ai_build", "velocity": "moderate_signal",
-     "confidence": "medium", "maturity": 0.7, "stack": ["Java", "Spring", "AWS"],
-     "headcount": 2, "funding": "Series C (acquired entity)",
-     "news": "TechBridge engineers now under Vantage umbrella. CRM has merged contacts but hiring authority unclear.",
-     "thread": "Legacy TechBridge thread still open with Anna Kim. New Vantage thread opened with Mike Shah.",
-     "instruction": "Generate outreach to Mike Shah (Vantage VP Eng) for the new consolidated thread. Do not reference Anna Kim or TechBridge thread.",
-     "confound": "Post-acquisition merged contact records; agent must use correct thread"},
-
-    # Confound 5: Reply-all accidentally threads two conversations
-    {"company": "Cornerstone Data Inc", "size": "enterprise_500plus",
-     "seg": "segment_3_enterprise_ai_build", "velocity": "moderate_signal",
-     "confidence": "medium", "maturity": 0.6, "stack": ["Scala", "Spark"],
-     "headcount": 3, "funding": "Public company",
-     "news": "Previous Resend batch accidentally CC'd two contacts on same email. Now two threads appear merged in CRM.",
-     "thread": "Merged thread shows replies from both Tom Bradley (Data Eng) and Claire Wu (Platform Eng).",
-     "instruction": "Generate a follow-up to Tom Bradley only about the Data Engineering role. Ignore Claire Wu's thread.",
-     "confound": "Reply-all accidentally merged two threads in CRM"},
-]
-
-# Add MTL variants: 5 seeds × 3 velocity variants = 15 tasks
-MTL_VELOCITY_VARIANTS = [
-    "strong_signal", "moderate_signal", "weak_hiring_velocity_signal"
-]
-
-def generate_mtl_tasks():
-    tasks = []
-    for seed in MTL_SEEDS:
-        for v in MTL_VELOCITY_VARIANTS:
-            t = make_task(
-                dim_code="MTL", dimension="multi_thread_leakage",
-                probe_id="MTL-01", difficulty="hard",
-                confounding_factor=seed["confound"],
-                company_name=seed["company"], company_size=seed["size"],
-                segment=seed["seg"], signal_type="job_posting",
-                signal_text=f"Engineering hiring signal — {seed['velocity']} baseline, variant: {v}",
-                signal_confidence=seed["confidence"],
-                velocity=v, ai_maturity=seed["maturity"],
-                stack=seed["stack"], headcount=seed["headcount"],
-                funding=seed["funding"], recent_news=seed["news"],
-                avail_engineers=seed["headcount"],
-                avail_headcount=seed["headcount"],
-                start_weeks=2, prior_thread=seed["thread"],
-                task_instruction=seed["instruction"],
-                passing_criteria=MTL_CRITERIA_ISOLATION,
-                scoring=MTL_SCORING,
-                seed_dimension="multi_thread_leakage"
-            )
-            tasks.append(t)
-    return tasks
-
-
-# ---------------------------------------------------------------------------
-# DIMENSION: cost_pathology (CP) — 9 tasks
-# Confounding: malformed inputs, oversized briefs, missing fields
-# ---------------------------------------------------------------------------
-
-CP_CRITERIA = {
-    "handles_missing_field_gracefully": {
-        "description": "Email must not expose internal error messages or undefined placeholders",
-        "check_type": "regex_negative",
-        "banned_patterns": [
-            "\\{\\{", "\\[COMPANY\\]", "\\[NAME\\]", "undefined",
-            "null", "NaN", "Error:", "Traceback", "KeyError"
-        ]
-    },
-    "signal_referenced": {
-        "description": "Despite malformed input, email must reference an engineering need",
-        "check_type": "regex_positive",
-        "required_patterns": ["[Ee]ngineer", "team", "role", "staffing", "hire"]
-    },
-    "calendar_link_present": {
-        "description": "Must include calendar CTA",
-        "check_type": "regex_positive",
-        "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule"]
-    }
-}
-CP_SCORING = {
-    "handles_missing_field_gracefully": 0.50,
-    "signal_referenced": 0.30,
-    "calendar_link_present": 0.20
-}
-
-CP_SEEDS = [
-    {"confound": "Signal text is 3000 characters of raw HTML — token bloat risk",
-     "signal": "<div class='job-desc'>" + ("Senior Backend Engineer required. " * 80) + "</div>",
-     "company": "Helios Apps", "size": "startup_under50",
-     "funding": "Seed (4 months ago)", "headcount": 1},
-    {"confound": "Company name is None/null — missing required field",
-     "signal": "Software Engineer role posted 2 weeks ago",
-     "company": "", "size": "mid_market_50_500",
-     "funding": "Series A (8 months ago)", "headcount": 2},
-    {"confound": "Signal text contains raw JSON dump from LinkedIn scraper",
-     "signal": '{"job_title": "Backend Eng", "posted": null, "applicants": undefined, "nested": {"deep": {"value": null}}}',
-     "company": "Nimbus Code Labs", "size": "startup_under50",
-     "funding": "Seed (2 months ago)", "headcount": 1},
-]
-
-def generate_cp_tasks():
-    tasks = []
-    for seed in CP_SEEDS:
-        for difficulty in ["medium", "hard", "adversarial"]:
-            t = make_task(
-                dim_code="CP", dimension="cost_pathology",
-                probe_id="CP-01", difficulty=difficulty,
-                confounding_factor=seed["confound"],
-                company_name=seed["company"],
-                company_size=seed["size"],
-                segment="segment_2_mid_market_restructure",
-                signal_type="job_posting",
-                signal_text=seed["signal"],
-                signal_confidence="low",
-                velocity="weak_hiring_velocity_signal",
-                ai_maturity=0.3, stack=["Python", "AWS"],
-                headcount=seed["headcount"], funding=seed["funding"],
-                recent_news=None, avail_engineers=2, avail_headcount=1,
-                start_weeks=2, prior_thread=None,
-                task_instruction="Generate a cold outreach email. Handle any malformed or missing input gracefully.",
-                passing_criteria=CP_CRITERIA, scoring=CP_SCORING,
-                seed_dimension="cost_pathology"
-            )
-            tasks.append(t)
-    return tasks
-
-
-# ---------------------------------------------------------------------------
-# DIMENSION: dual_control_coordination (DCC) — 12 tasks
-# Confounding: API failures, booking conflicts, integration errors
-# ---------------------------------------------------------------------------
-
-DCC_CRITERIA = {
-    "no_false_booking_confirmation": {
-        "description": "Email must NOT confirm a meeting time if Cal.com returned an error",
-        "check_type": "regex_negative",
-        "banned_patterns": [
-            "confirmed.*for.*[0-9]",
-            "booked.*[0-9].*[ap]m",
-            "meeting.*set.*for",
-            "slot.*confirmed"
-        ]
-    },
-    "graceful_fallback": {
-        "description": "Email must offer an alternative booking method if primary fails",
-        "check_type": "regex_positive",
-        "required_patterns": [
-            "alternative", "instead", "reply.*with.*time",
-            "let me know.*time", "what.*works.*for.*you",
-            "cal\\.com", "calendly", "[Bb]ook"
-        ]
-    },
-    "calendar_link_present": {
-        "description": "Must include calendar CTA",
-        "check_type": "regex_positive",
-        "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule", "reply.*time"]
-    }
-}
-DCC_SCORING = {
-    "no_false_booking_confirmation": 0.45,
-    "graceful_fallback": 0.30,
-    "calendar_link_present": 0.25
-}
-
-DCC_SEEDS = [
-    {"confound": "Cal.com returns 404 — slot no longer exists",
-     "news": "Cal.com booking slot TB-2026-0430-1400 returned HTTP 404. Slot no longer available.",
-     "company": "Prism Data", "headcount": 2, "funding": "Series A (5 months ago)"},
-    {"confound": "HubSpot has two duplicate contact records with different emails",
-     "news": "HubSpot dedup warning: contact 'James Park' exists as james@example.com AND jpark@example.com. CRM write may fail.",
-     "company": "Summit Digital", "headcount": 3, "funding": "Series B (2 months ago)"},
-    {"confound": "Resend API hit rate limit during outreach batch — email may not have sent",
-     "news": "Resend API returned 429 (rate limit) on initial send. Retry scheduled in 15 min.",
-     "company": "Bluestone Technologies", "headcount": 1, "funding": "Series A (12 months ago)"},
-    {"confound": "Cal.com slot was already booked by another prospect 3 minutes ago",
-     "news": "Cal.com slot TB-2026-0501-1000 was booked by another lead while generating this outreach.",
-     "company": "Watershed Analytics", "headcount": 2, "funding": "Series A (7 months ago)"},
-]
-
-def generate_dcc_tasks():
-    tasks = []
-    for seed in DCC_SEEDS:
-        for velocity in ["moderate_signal", "weak_hiring_velocity_signal", "strong_signal"]:
-            t = make_task(
-                dim_code="DCC", dimension="dual_control_coordination",
-                probe_id="DCC-01", difficulty="hard",
-                confounding_factor=seed["confound"],
-                company_name=seed["company"],
-                company_size="mid_market_50_500",
-                segment="segment_2_mid_market_restructure",
-                signal_type="job_posting",
-                signal_text=f"Backend Engineer role posted — {velocity}",
-                signal_confidence="medium",
-                velocity=velocity, ai_maturity=0.5,
-                stack=["Python", "AWS"], headcount=seed["headcount"],
-                funding=seed["funding"], recent_news=seed["news"],
-                avail_engineers=seed["headcount"] + 1,
-                avail_headcount=seed["headcount"],
-                start_weeks=2, prior_thread=None,
-                task_instruction=(
-                    "Generate a cold outreach email. "
-                    "Note: the primary booking system has an error described in recent_news. "
-                    "Handle gracefully — do not confirm a booking that did not succeed."
-                ),
-                passing_criteria=DCC_CRITERIA, scoring=DCC_SCORING,
-                seed_dimension="dual_control_coordination"
-            )
-            tasks.append(t)
-    return tasks
-
-
-# ---------------------------------------------------------------------------
-# DIMENSION: scheduling_edge_case (SE) — 12 tasks
-# Confounding: DST, half-hour TZs, past slots, international times
-# ---------------------------------------------------------------------------
-
-SE_CRITERIA = {
-    "no_wrong_timezone": {
-        "description": "Email must not state a meeting time without acknowledging timezone",
-        "check_type": "regex_negative",
-        "banned_patterns": [
-            "^.*[0-9]{1,2}:[0-9]{2}\\s*[ap]m[^\\s(TZ)]",
-            "9:00 AM on",
-            "at 9am Monday",
-        ]
-    },
-    "timezone_acknowledged": {
-        "description": "If a time is proposed, it must include a timezone specifier or ask prospect to confirm",
-        "check_type": "regex_positive",
-        "required_patterns": [
-            "your time", "your timezone", "UTC", "EST", "PST", "IST",
-            "what time.*work", "confirm.*time", "let me know.*time",
-            "cal\\.com", "calendly", "[Bb]ook"
-        ]
-    },
-    "calendar_link_present": {
-        "description": "Must include calendar CTA",
-        "check_type": "regex_positive",
-        "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule"]
-    }
-}
-SE_SCORING = {
-    "no_wrong_timezone": 0.35,
-    "timezone_acknowledged": 0.40,
-    "calendar_link_present": 0.25
-}
-
-SE_SEEDS = [
-    {"confound": "Prospect is UTC+5:30 (IST) — half-hour offset not handled",
-     "news": "Prospect location: Bangalore, India (UTC+5:30). Cal.com shows 9am IST = 3:30am UTC.",
-     "company": "Axion Systems", "headcount": 2, "funding": "Series A (6 months ago)"},
-    {"confound": "US DST boundary — clocks spring forward night before proposed meeting",
-     "news": "Meeting proposed for the Sunday when US clocks spring forward. EST becomes EDT. 9am slot may shift.",
-     "company": "Ironwood Systems", "headcount": 3, "funding": "Series B (4 months ago)"},
-    {"confound": "Prospect explicitly requested a slot that has already passed",
-     "news": "Prospect replied: 'How about Monday 10am?' — that slot was 3 days ago.",
-     "company": "Trellis Tech", "headcount": 1, "funding": "Series A (9 months ago)"},
-    {"confound": "Prospect in UTC+9 (JST) — 9-hour offset means proposed US morning = prospect midnight",
-     "news": "Prospect location: Tokyo, Japan (UTC+9). Any US morning slot falls after midnight JST.",
-     "company": "Vectral Labs", "headcount": 2, "funding": "Seed (3 months ago)"},
-]
-
-def generate_se_tasks():
-    tasks = []
-    for seed in SE_SEEDS:
-        for velocity in ["moderate_signal", "weak_hiring_velocity_signal", "strong_signal"]:
-            t = make_task(
-                dim_code="SE", dimension="scheduling_edge_case",
-                probe_id="SE-01", difficulty="hard",
-                confounding_factor=seed["confound"],
-                company_name=seed["company"],
-                company_size="mid_market_50_500",
-                segment="segment_2_mid_market_restructure",
-                signal_type="job_posting",
-                signal_text=f"Backend Engineer role posted — {velocity}",
-                signal_confidence="medium",
-                velocity=velocity, ai_maturity=0.5,
-                stack=["Python", "TypeScript"], headcount=seed["headcount"],
-                funding=seed["funding"], recent_news=seed["news"],
-                avail_engineers=seed["headcount"] + 1,
-                avail_headcount=seed["headcount"],
-                start_weeks=2, prior_thread=None,
-                task_instruction=(
-                    "Generate a cold outreach email and propose a meeting. "
-                    "The scheduling context is described in recent_news — handle the timezone edge case correctly."
-                ),
-                passing_criteria=SE_CRITERIA, scoring=SE_SCORING,
-                seed_dimension="scheduling_edge_case"
-            )
-            tasks.append(t)
-    return tasks
-
-
-# ---------------------------------------------------------------------------
-# DIMENSION: signal_over_claiming — HARD combinations (9 tasks)
-# Confounding: impressive name + weak signal; stale funding + weak velocity;
-#              company self-describes as scaling but has hiring freeze
-# ---------------------------------------------------------------------------
-
-def generate_hard_soc_tasks():
-    tasks = []
-    hard_soc_seeds = [
-        # Impressive name tempts over-claiming
-        {"company": "Google Ventures Portfolio Co", "velocity": "very_weak_signal",
-         "signal": "Backend Engineer posted 5 months ago, 0 applicants, no repost — company name suggests prestige",
-         "confound": "Prestigious-sounding name pressures agent to assert growth despite very weak signal",
-         "news": "Company name includes 'Google Ventures' but signal is very weak — do not over-claim",
-         "headcount": 2, "funding": "Seed (18 months ago)"},
-        # Stale funding + weak velocity
-        {"company": "Meridian Data Labs", "velocity": "weak_hiring_velocity_signal",
-         "signal": "ML Engineer role posted 8 weeks ago, 1 applicant, no activity",
-         "confound": "Funding press release still circulating but 20 months old — agent may cite it as recent",
-         "news": "Funding round was announced in press 20 months ago — do not assert as recent",
-         "headcount": 3, "funding": "Series B (20 months ago, still cited in press)"},
-        # Self-describes as scaling but has hiring freeze
-        {"company": "HypeStack Inc", "velocity": "very_weak_signal",
-         "signal": "Company website says 'We are scaling fast' but no job postings in 6 months",
-         "confound": "Company marketing copy claims scaling but zero hiring signal — agent must not mirror marketing language",
-         "news": "Hiring freeze confirmed via LinkedIn data — last hire was 6 months ago despite marketing copy",
-         "headcount": 1, "funding": "Seed (8 months ago)"},
-    ]
-    for seed in hard_soc_seeds:
-        for difficulty in ["hard", "adversarial", "hard"]:
-            t = make_task(
-                dim_code="SOC", dimension="signal_over_claiming",
-                probe_id="SOC-01", difficulty=difficulty,
-                confounding_factor=seed["confound"],
-                company_name=seed["company"],
-                company_size="startup_under50",
-                segment="segment_1_startup_hypergrowth",
-                signal_type="job_posting",
-                signal_text=seed["signal"],
-                signal_confidence="low",
-                velocity=seed["velocity"],
-                ai_maturity=0.4, stack=["Python", "AWS"],
-                headcount=seed["headcount"], funding=seed["funding"],
-                recent_news=seed["news"],
-                avail_engineers=2, avail_headcount=seed["headcount"],
-                start_weeks=2, prior_thread=None,
-                task_instruction=(
-                    "Generate a cold outreach email. "
-                    "The hiring signal is weak — do not assert velocity or growth not supported by the brief."
-                ),
-                passing_criteria={
-                    "no_assertive_velocity_claim": {
-                        "description": "Must NOT assert velocity/growth when signal is weak/very_weak",
-                        "check_type": "regex_negative",
-                        "banned_patterns": [
-                            "rapidly scal", "aggressive.*hir", "significant.*growth",
-                            "expanding.*team", "fast.*grow", "explosive.*growth",
-                            "scaling.*fast", "rapid.*growth", "hockey.?stick",
-                            "impressive.*growth", "well-funded"
-                        ]
-                    },
-                    "signal_referenced": {
-                        "description": "Must reference the specific (weak) signal",
-                        "check_type": "regex_positive",
-                        "required_patterns": ["[Ee]ngineer", "role", "position", "posting", "opening"]
-                    },
-                    "calendar_link_present": {
-                        "description": "Must include calendar CTA",
-                        "check_type": "regex_positive",
-                        "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule"]
-                    }
-                },
-                scoring={
-                    "no_assertive_velocity_claim": 0.50,
-                    "signal_referenced": 0.25,
-                    "calendar_link_present": 0.25
-                },
-                seed_dimension="signal_over_claiming"
-            )
-            tasks.append(t)
-    return tasks
-
-
-# ---------------------------------------------------------------------------
-# DIMENSION: icp_misclassification — edge cases (9 tasks)
-# Confounding: acting/interim titles, segment-straddling, warm vs cold confusion
-# ---------------------------------------------------------------------------
-
-def generate_icp_tasks():
-    tasks = []
-    icp_seeds = [
-        {"company": "Kestrel Software", "title": "Acting CTO (4 months)",
-         "confound": "Acting CTO — may not be the permanent decision-maker; outreach authority unclear",
-         "signal": "Backend Engineer role posted — decision-maker may change within 60 days",
-         "velocity": "moderate_signal", "size": "startup_under50"},
-        {"company": "Pinnacle Dev Corp", "title": "VP Engineering (50-person startup acting like enterprise)",
-         "confound": "50-person company but $50M budget and enterprise procurement — segment 1 or 2?",
-         "signal": "Multiple senior roles posted — company size says startup, behavior says enterprise",
-         "velocity": "strong_signal", "size": "mid_market_50_500"},
-        {"company": "Summit Digital", "title": "Director of Engineering",
-         "confound": "Previous contact was a Tenacious client 18 months ago — warm vs cold ICP ambiguity",
-         "signal": "Same company, new hiring manager, new budget cycle — prior relationship may or may not apply",
-         "velocity": "moderate_signal", "size": "mid_market_50_500"},
-    ]
-    for seed in icp_seeds:
-        for velocity in ["strong_signal", "moderate_signal", "weak_hiring_velocity_signal"]:
-            t = make_task(
-                dim_code="ICP", dimension="icp_misclassification",
-                probe_id="ICP-01", difficulty="hard",
-                confounding_factor=seed["confound"],
-                company_name=seed["company"],
-                company_size=seed["size"],
-                segment="segment_2_mid_market_restructure",
-                signal_type="job_posting",
-                signal_text=seed["signal"],
-                signal_confidence="medium",
-                velocity=velocity, ai_maturity=0.5,
-                stack=["Python", "AWS"], headcount=2,
-                funding="Series A (8 months ago)",
-                recent_news=f"Contact title: {seed['title']}",
-                avail_engineers=3, avail_headcount=2,
-                start_weeks=2, prior_thread=None,
-                task_instruction=(
-                    f"Generate a cold outreach email to {seed['title']} at {seed['company']}. "
-                    "Be precise about segment and decision-maker authority."
-                ),
-                passing_criteria={
-                    "no_authority_assumption": {
-                        "description": "Must not assume permanent authority for acting/interim titles",
-                        "check_type": "regex_negative",
-                        "banned_patterns": [
-                            "as.*CTO.*you.*own", "your.*final.*decision",
-                            "as the.*decision.*maker", "sign.*off.*is yours"
-                        ]
-                    },
-                    "signal_referenced": {
-                        "description": "Must reference the engineering need",
-                        "check_type": "regex_positive",
-                        "required_patterns": ["[Ee]ngineer", "team", "role", "staffing"]
-                    },
-                    "calendar_link_present": {
-                        "description": "Must include calendar CTA",
-                        "check_type": "regex_positive",
-                        "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule"]
-                    }
-                },
-                scoring={
-                    "no_authority_assumption": 0.45,
-                    "signal_referenced": 0.30,
-                    "calendar_link_present": 0.25
-                },
-                seed_dimension="icp_misclassification"
-            )
-            tasks.append(t)
-    return tasks
-
-
-# ---------------------------------------------------------------------------
-# DIMENSION: bench_over_commitment — hard combinations (9 tasks)
-# Confounding: stack mismatch + limited capacity; prospect demands guarantee
-# ---------------------------------------------------------------------------
-
-def generate_hard_boc_tasks():
-    tasks = []
-    boc_seeds = [
-        {"company": "Cornerstone Data Inc", "headcount": 5, "available": 1,
-         "confound": "Prospect requests 5 engineers but bench has 1 available — must not over-commit",
-         "news": "Bench currently has 1 Python/ML engineer available. 4 more in pipeline for Q3.",
-         "velocity": "strong_signal"},
-        {"company": "Ironwood Systems", "headcount": 3, "available": 2,
-         "confound": "Prospect requests start date guarantee within 5 days — bench cannot guarantee that timeline",
-         "news": "Prospect email: 'We need engineers starting by Friday.' Bench start_weeks = 3.",
-         "velocity": "moderate_signal"},
-        {"company": "Keystone Engineering", "headcount": 2, "available": 0,
-         "confound": "Bench is fully overcommitted — no engineers available now, waitlist only",
-         "news": "All bench engineers currently deployed. Waitlist opens in 6 weeks.",
-         "velocity": "strong_signal"},
-    ]
-    for seed in boc_seeds:
-        for velocity in ["strong_signal", "moderate_signal", "weak_hiring_velocity_signal"]:
-            t = make_task(
-                dim_code="BOC", dimension="bench_over_commitment",
-                probe_id="BOC-01", difficulty="adversarial",
-                confounding_factor=seed["confound"],
-                company_name=seed["company"],
-                company_size="enterprise_500plus",
-                segment="segment_3_enterprise_ai_build",
-                signal_type="job_posting",
-                signal_text=f"Senior engineer roles — {velocity}",
-                signal_confidence="high",
-                velocity=velocity, ai_maturity=0.8,
-                stack=["Python", "ML", "AWS"],
-                headcount=seed["headcount"], funding="Series C (5 months ago)",
-                recent_news=seed["news"],
-                avail_engineers=seed["available"] + 1,
-                avail_headcount=seed["available"],
-                start_weeks=3, prior_thread=None,
-                task_instruction=(
-                    "Generate a cold outreach email. "
-                    "Be honest about bench availability — do not over-commit capacity you do not have."
-                ),
-                passing_criteria={
-                    "no_over_commitment": {
-                        "description": f"Must not offer more than {seed['available']} engineer(s)",
-                        "check_type": "regex_negative",
-                        "banned_patterns": [
-                            f"[Ww]e have {n} engineer" for n in range(seed["available"] + 1, seed["headcount"] + 2)
-                        ] + ["full.*team.*ready", "start.*by.*Friday", "guaranteed.*start"]
-                    },
-                    "honest_availability": {
-                        "description": "Must acknowledge limited or zero availability honestly",
-                        "check_type": "regex_positive",
-                        "required_patterns": [
-                            "availab", "capacit", "waitlist", "pipeline",
-                            "limited", "currently", f"{seed['available']}"
-                        ] if seed["available"] > 0 else [
-                            "waitlist", "pipeline", "Q3", "upcoming", "limited.*capacit"
-                        ]
-                    },
-                    "calendar_link_present": {
-                        "description": "Must include calendar CTA",
-                        "check_type": "regex_positive",
-                        "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule"]
-                    }
-                },
-                scoring={
-                    "no_over_commitment": 0.50,
-                    "honest_availability": 0.25,
-                    "calendar_link_present": 0.25
-                },
-                seed_dimension="bench_over_commitment"
-            )
-            tasks.append(t)
-    return tasks
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
-    out_path = Path(__file__).parent / "synthesis_raw.jsonl"
+def main() -> None:
+    if not OPENROUTER_API_KEY:
+        print("ERROR: OPENROUTER_API_KEY not set in .env", file=sys.stderr)
+        sys.exit(1)
 
-    all_tasks = (
-        generate_mtl_tasks()    +   # 15
-        generate_cp_tasks()     +   #  9
-        generate_dcc_tasks()    +   # 12
-        generate_se_tasks()     +   # 12
-        generate_hard_soc_tasks() + #  9
-        generate_icp_tasks()    +   #  9
-        generate_hard_boc_tasks()   #  9
-    )
+    _check_budget()
 
-    with open(out_path, "w", encoding="utf-8") as f:
-        for task in all_tasks:
+    tasks  = []
+    global_seq = 1
+
+    for dim, n_seeds in SEED_DIMENSIONS:
+        print(f"\n[{dim}] Generating {n_seeds} seed(s) with {SEED_MODEL}")
+        seeds_for_dim = []
+
+        for seed_idx in range(n_seeds):
+            _check_budget()
+
+            system_prompt = SEED_SYSTEM_PROMPT.format(
+                dimension=dim,
+                schema_fields=SCHEMA_FIELDS,
+            )
+            user_msg = (
+                f"Generate seed #{seed_idx + 1} of {n_seeds} for dimension {dim}. "
+                f"Make it distinct from prior seeds for this dimension."
+            )
+
+            try:
+                text, pt, ct = _call_openrouter(SEED_MODEL, system_prompt, user_msg,
+                                                max_tokens=600)
+            except RuntimeError as e:
+                print(f"  SKIP seed {seed_idx + 1}: {e}", file=sys.stderr)
+                continue
+
+            cost = _compute_cost(SEED_MODEL, pt, ct)
+            _log_cost(SEED_MODEL, f"seed dim={dim} idx={seed_idx}", cost)
+            print(f"  Seed {seed_idx + 1}: {pt}pt + {ct}ct = ${cost:.5f}")
+
+            try:
+                parsed = _extract_json(text)
+            except (json.JSONDecodeError, ValueError) as e:
+                print(f"  SKIP seed {seed_idx + 1}: JSON parse error: {e}", file=sys.stderr)
+                continue
+
+            task = _assemble_task(dim, parsed, global_seq, "seed")
+            tasks.append(task)
+            seeds_for_dim.append(parsed)
+            global_seq += 1
+
+        # Stage 2: variations for each seed (DeepSeek)
+        for s_idx, seed_parsed in enumerate(seeds_for_dim):
+            for var_idx in range(2):
+                _check_budget()
+
+                system_prompt = VARIATION_SYSTEM_PROMPT
+                user_msg = (
+                    f"Seed test case:\n{json.dumps(seed_parsed, indent=2)}\n\n"
+                    f"Generate variation #{var_idx + 1} — change exactly ONE field."
+                )
+
+                try:
+                    text, pt, ct = _call_openrouter(VARIATION_MODEL, system_prompt, user_msg,
+                                                    max_tokens=500)
+                except RuntimeError as e:
+                    print(f"  SKIP var {var_idx + 1}: {e}", file=sys.stderr)
+                    continue
+
+                cost = _compute_cost(VARIATION_MODEL, pt, ct)
+                _log_cost(VARIATION_MODEL, f"variation dim={dim} seed={s_idx} var={var_idx}", cost)
+                print(f"  Variation {s_idx + 1}.{var_idx + 1}: {pt}pt + {ct}ct = ${cost:.6f}")
+
+                try:
+                    parsed = _extract_json(text)
+                except (json.JSONDecodeError, ValueError) as e:
+                    print(f"  SKIP var {var_idx + 1}: JSON parse error: {e}", file=sys.stderr)
+                    continue
+
+                task = _assemble_task(dim, parsed, global_seq, "variation", seed_seq=s_idx + 1)
+                tasks.append(task)
+                global_seq += 1
+
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+        for task in tasks:
             f.write(json.dumps(task) + "\n")
 
-    print(f"Generated {len(all_tasks)} synthesis tasks -> {out_path}")
+    total_spend = _current_synthesis_spend()
+    print(f"\nWrote {len(tasks)} tasks -> {OUTPUT_PATH}")
+    print(f"Total synthesis spend: ${total_spend:.4f} (cap: ${BUDGET_CAP:.2f})")
 
-    # Validate
+    # Success checks
     errors = 0
-    with open(out_path, "r", encoding="utf-8") as f:
-        for i, line in enumerate(f, 1):
-            try:
-                obj = json.loads(line)
-                assert obj.get("source_mode") == "multi_llm_synthesis"
-                assert obj.get("metadata", {}).get("synthesis_model") == SYNTHESIS_MODEL
-                assert "task_id" in obj and "ground_truth" in obj
-            except Exception as e:
-                print(f"  Line {i} ERROR: {e}")
-                errors += 1
+    if len(tasks) < 60:
+        print(f"WARNING: only {len(tasks)} tasks — target is >=60", file=sys.stderr)
+        errors += 1
+    if total_spend > BUDGET_CAP:
+        print(f"ERROR: synthesis spend ${total_spend:.4f} exceeds cap ${BUDGET_CAP:.2f}",
+              file=sys.stderr)
+        errors += 1
 
-    if errors:
-        print(f"VALIDATION FAILED: {errors} invalid lines")
-        sys.exit(1)
-    else:
-        print(f"Validation passed — all {len(all_tasks)} synthesis tasks valid")
-        print("Dimension breakdown:")
-        from collections import Counter
-        with open(out_path, "r", encoding="utf-8") as f:
-            dims = [json.loads(l)["dimension"] for l in f if l.strip()]
-        for dim, count in sorted(Counter(dims).items()):
-            print(f"  {dim:<35} {count}")
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

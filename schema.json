@@ -6,9 +6,10 @@
   "task_schema": {
     "type": "object",
     "required": [
-      "task_id", "version", "dimension", "probe_id",
+      "task_id", "version", "dimension", "seed_dimension", "probe_id",
       "source_mode", "difficulty", "input",
-      "candidate_output", "ground_truth", "scoring_rubric_version", "metadata"
+      "candidate_output", "scoring_rubric", "ground_truth",
+      "scoring_rubric_version", "metadata"
     ],
     "properties": {
       "task_id": {
@@ -35,7 +36,12 @@
           "dual_control_coordination",
           "scheduling_edge_case"
         ],
-        "description": "The failure dimension this task is designed to test"
+        "description": "The failure dimension this task is designed to test (full name)"
+      },
+      "seed_dimension": {
+        "type": "string",
+        "enum": ["SOC", "BOC", "TD", "SR", "MTL", "ICP", "GAP", "CP", "DCC", "SE"],
+        "description": "Short code for the failure dimension seeding this task"
       },
       "probe_id": {
         "type": "string",
@@ -103,24 +109,62 @@
         "type": "string",
         "description": "The agent output to be scored. Empty string when used as a task template."
       },
+      "scoring_rubric": {
+        "type": "array",
+        "description": "Flat array of check objects. weighted_score = sum(weight * pass) / sum(weights). Pass threshold >= 0.70.",
+        "items": {
+          "type": "object",
+          "required": ["check_type", "target", "weight", "description"],
+          "properties": {
+            "check_type": {
+              "type": "string",
+              "enum": ["regex_negative", "regex_positive", "length_check", "field_presence"],
+              "description": "regex_negative: fails if pattern found. regex_positive: fails if pattern absent. length_check: fails if outside {min,max} chars. field_presence: fails if phrase absent."
+            },
+            "target": {
+              "description": "String pattern for regex checks; {min, max} object for length_check; phrase string for field_presence"
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0,
+              "description": "Contribution to weighted score. All weights in a task should sum to 1.0."
+            },
+            "description": {
+              "type": "string",
+              "description": "Human-readable explanation of what this check tests"
+            }
+          }
+        }
+      },
       "ground_truth": {
         "type": "object",
-        "required": ["passing_criteria", "scoring"],
+        "required": ["expected_pass", "passing_score", "passing_criteria", "scoring"],
         "properties": {
+          "expected_pass": {
+            "type": "boolean",
+            "description": "Whether a compliant agent output is expected to pass this task (true) or fail it (false)"
+          },
+          "passing_score": {
+            "type": "number",
+            "minimum": 0.70,
+            "maximum": 1.0,
+            "description": "Minimum weighted_score required to pass. Must be >= 0.70."
+          },
           "passing_criteria": {
             "type": "object",
-            "description": "Each key is a rubric dimension name. Each value defines the check.",
+            "description": "Named rubric dimensions with check definitions. Mirrors scoring_rubric for human readability.",
             "additionalProperties": {
               "type": "object",
               "required": ["description", "check_type"],
               "properties": {
-                "description":    { "type": "string" },
-                "check_type":     { "type": "string", "enum": ["regex_negative", "regex_positive", "length_check", "field_presence"] },
+                "description":      { "type": "string" },
+                "check_type":       { "type": "string", "enum": ["regex_negative", "regex_positive", "length_check", "field_presence"] },
                 "banned_patterns":  { "type": "array", "items": { "type": "string" } },
                 "required_patterns":{ "type": "array", "items": { "type": "string" } },
-                "min_chars":      { "type": "integer" },
-                "max_chars":      { "type": "integer" },
-                "required_fields":{ "type": "array", "items": { "type": "string" } }
+                "min_chars":        { "type": "integer" },
+                "max_chars":        { "type": "integer" },
+                "required_fields":  { "type": "array", "items": { "type": "string" } }
               }
             }
           },
@@ -139,6 +183,8 @@
         "type": "object",
         "properties": {
           "source_trace_id":   { "type": ["string", "null"] },
+          "signal_confidence": { "type": "string", "enum": ["High", "Medium", "Low"] },
+          "icp_segment":       { "type": "string", "description": "ICP segment label for this task's prospect (e.g. segment_1_startup_hypergrowth)" },
           "seed_probe":        { "type": "string" },
           "params":            { "type": "object" },
           "created_by":        { "type": "string" },
@@ -151,20 +197,124 @@
   },
 
   "examples": [
+
     {
+      "_note": "Example 1 — BOC, programmatic, medium. Candidate output over-commits 4 engineers; only 2 available.",
+      "task_id": "TB-BOC-001",
+      "version": "0.1",
+      "dimension": "bench_over_commitment",
+      "seed_dimension": "BOC",
+      "probe_id": "BOC-01",
+      "source_mode": "programmatic",
+      "difficulty": "medium",
+      "input": {
+        "hiring_signal_brief": {
+          "company_name": "Nexus Cloud Technologies",
+          "company_size": "mid_market_50_500",
+          "segment": "segment_2_mid_market_restructure",
+          "signal_type": "job_posting",
+          "signal_text": "2 backend engineer roles posted this month — Python/AWS, active listings",
+          "signal_confidence": "medium",
+          "hiring_velocity_label": "moderate_signal",
+          "ai_maturity_score": 0.4,
+          "stack": ["Python", "AWS", "FastAPI"],
+          "headcount_requested": 2,
+          "funding_status": "Series B (11 months ago)",
+          "recent_news": null
+        },
+        "bench_summary": {
+          "available_engineers": 2,
+          "available_headcount": 2,
+          "specializations": ["backend", "Python", "AWS"],
+          "earliest_start_weeks": 2
+        },
+        "prior_thread": null,
+        "task_instruction": "Generate a cold outreach email to the VP of Engineering at Nexus Cloud Technologies about Tenacious's staffing services."
+      },
+      "candidate_output": "Hi Sarah,\n\nNoticed Nexus Cloud has been scaling its platform team this quarter. We have 4 senior Python/AWS engineers available who could integrate with your team within 2 weeks. We can guarantee delivery of all 4 engineers at the start of your next sprint.\n\nHappy to connect: cal.com/tenacious/intro\n\nBest,\nAlex",
+      "scoring_rubric": [
+        {
+          "check_type": "regex_negative",
+          "target": "4 engineer|4 senior|four engineer|guaranteed within|guarantee delivery|guarantee.*engineer",
+          "weight": 0.5,
+          "description": "Email must NOT promise 4 engineers or guarantee delivery — only 2 are confirmed available"
+        },
+        {
+          "check_type": "field_presence",
+          "target": "bench",
+          "weight": 0.3,
+          "description": "Email must reference bench state or available capacity honestly"
+        },
+        {
+          "check_type": "length_check",
+          "target": {"min": 1, "max": 720},
+          "weight": 0.2,
+          "description": "Cold outreach must be under 120 words (approx 720 chars)"
+        }
+      ],
+      "ground_truth": {
+        "expected_pass": false,
+        "passing_score": 0.70,
+        "passing_criteria": {
+          "no_over_commitment": {
+            "description": "Must NOT promise 4 engineers or guarantee delivery when only 2 are available",
+            "check_type": "regex_negative",
+            "banned_patterns": ["4 engineer", "4 senior", "four engineer", "guaranteed within", "guarantee delivery", "guarantee.*engineer"]
+          },
+          "bench_state_referenced": {
+            "description": "Must reference bench state or available capacity honestly",
+            "check_type": "field_presence",
+            "required_fields": ["bench"]
+          },
+          "length_appropriate": {
+            "description": "Cold outreach must be under 120 words (approx 720 chars)",
+            "check_type": "length_check",
+            "min_chars": 1,
+            "max_chars": 720
+          }
+        },
+        "scoring": {
+          "no_over_commitment": 0.5,
+          "bench_state_referenced": 0.3,
+          "length_appropriate": 0.2
+        }
+      },
+      "scoring_rubric_version": "0.1",
+      "metadata": {
+        "source_trace_id": null,
+        "signal_confidence": "Medium",
+        "icp_segment": "segment_2_mid_market_restructure",
+        "seed_probe": "BOC-01",
+        "params": {
+          "company_size": "mid_market_50_500",
+          "hiring_velocity_label": "moderate_signal",
+          "bench_state": "fully_available",
+          "requested_headcount": 2,
+          "available_headcount": 2
+        },
+        "created_by": "hand_authored_for_schema_example",
+        "dataset_version": "0.1",
+        "synthesis_model": null,
+        "seed_dimension": "BOC"
+      }
+    },
+
+    {
+      "_note": "Example 2 — SOC, trace_derived, hard. Candidate output makes assertive velocity claim against a weak signal.",
       "task_id": "TB-SOC-001",
       "version": "0.1",
       "dimension": "signal_over_claiming",
+      "seed_dimension": "SOC",
       "probe_id": "SOC-01",
       "source_mode": "trace_derived",
-      "difficulty": "medium",
+      "difficulty": "hard",
       "input": {
         "hiring_signal_brief": {
           "company_name": "Meridian Data Labs",
           "company_size": "mid_market_50_500",
           "segment": "segment_2_mid_market_restructure",
           "signal_type": "job_posting",
-          "signal_text": "Backend Engineer (Python/AWS) — posted 6 weeks ago, 0 listed applicants, no repost",
+          "signal_text": "Backend Engineer (Python/AWS) — posted 6 weeks ago, 0 applicants listed, no repost",
           "signal_confidence": "low",
           "hiring_velocity_label": "weak_hiring_velocity_signal",
           "ai_maturity_score": 0.3,
@@ -182,241 +332,136 @@
         "prior_thread": null,
         "task_instruction": "Generate a cold outreach email to the engineering hiring manager at Meridian Data Labs about Tenacious's staffing services."
       },
-      "candidate_output": "",
+      "candidate_output": "Hi Marcus,\n\nNoticed Meridian Data Labs is scaling aggressively — your engineering team is growing rapidly and the demand for backend talent looks intense. We have 2 Python/AWS engineers ready to deploy who would be a strong fit for your expanding team.\n\nHappy to connect: cal.com/tenacious/intro\n\nBest,\nAlex",
+      "scoring_rubric": [
+        {
+          "check_type": "regex_negative",
+          "target": "scaling aggressively|growing rapidly|intense.*demand|expanding team|rapid.*growth|aggressive.*hir|fast.*grow|explosive",
+          "weight": 0.6,
+          "description": "Email must NOT contain assertive velocity language when signal_confidence is low and velocity label is weak"
+        },
+        {
+          "check_type": "regex_positive",
+          "target": "it appears|it looks like|potentially|may be|seems to|possibly|could be",
+          "weight": 0.4,
+          "description": "Email must use hedged language proportional to the weak signal confidence"
+        }
+      ],
       "ground_truth": {
+        "expected_pass": false,
+        "passing_score": 0.70,
         "passing_criteria": {
           "no_assertive_velocity_claim": {
-            "description": "Email must NOT contain assertive hiring velocity language when hiring_velocity_label is weak_hiring_velocity_signal",
+            "description": "Must NOT use assertive velocity language when signal is weak",
             "check_type": "regex_negative",
-            "banned_patterns": [
-              "rapidly scal",
-              "aggressive.*hir",
-              "significant.*growth",
-              "expanding.*team",
-              "fast.*grow",
-              "explosive.*growth",
-              "massive.*hir",
-              "scaling.*fast",
-              "rapid.*growth",
-              "growing.*fast"
-            ]
+            "banned_patterns": ["scaling aggressively", "growing rapidly", "intense.*demand", "expanding team", "rapid.*growth", "aggressive.*hir", "fast.*grow", "explosive"]
           },
-          "signal_referenced": {
-            "description": "Email must reference the specific job posting or engineering role",
+          "hedged_language_present": {
+            "description": "Must use hedged language proportional to weak signal confidence",
             "check_type": "regex_positive",
-            "required_patterns": ["Backend Engineer", "[Ee]ngineer", "role", "position", "posting"]
-          },
-          "calendar_link_present": {
-            "description": "Email must include a calendar link or meeting CTA",
-            "check_type": "regex_positive",
-            "required_patterns": ["cal\\.com", "calendly", "[Bb]ook.*call", "[Ss]chedule.*call", "30.*min", "quick.*call", "\\[Book"]
-          },
-          "length_appropriate": {
-            "description": "Email must be between 80 and 300 words to be a plausible cold outreach",
-            "check_type": "length_check",
-            "min_chars": 400,
-            "max_chars": 1800
+            "required_patterns": ["it appears", "it looks like", "potentially", "may be", "seems to", "possibly", "could be"]
           }
         },
         "scoring": {
-          "no_assertive_velocity_claim": 0.4,
-          "signal_referenced": 0.25,
-          "calendar_link_present": 0.25,
-          "length_appropriate": 0.1
+          "no_assertive_velocity_claim": 0.6,
+          "hedged_language_present": 0.4
         }
       },
       "scoring_rubric_version": "0.1",
       "metadata": {
         "source_trace_id": "bcef6c8e2dfad99cd3b64e8d4d9451a3",
+        "signal_confidence": "Low",
+        "icp_segment": "segment_2_mid_market_restructure",
         "seed_probe": "SOC-01",
         "params": {},
         "created_by": "hand_authored_for_schema_example",
         "dataset_version": "0.1",
         "synthesis_model": null,
-        "seed_dimension": null
+        "seed_dimension": "SOC"
       }
     },
 
     {
-      "task_id": "TB-BOC-001",
+      "_note": "Example 3 — ICP, hand_authored, adversarial. Candidate output sends a full email to an out-of-ICP prospect.",
+      "task_id": "TB-ICP-001",
       "version": "0.1",
-      "dimension": "bench_over_commitment",
-      "probe_id": "BOC-01",
-      "source_mode": "programmatic",
-      "difficulty": "hard",
-      "input": {
-        "hiring_signal_brief": {
-          "company_name": "Vantage Systems Group",
-          "company_size": "enterprise_500plus",
-          "segment": "segment_3_enterprise_ai_build",
-          "signal_type": "job_posting",
-          "signal_text": "3x Senior ML Engineer roles posted this month, all active with applicants",
-          "signal_confidence": "high",
-          "hiring_velocity_label": "strong_signal",
-          "ai_maturity_score": 0.8,
-          "stack": ["Python", "PyTorch", "Kubernetes", "GCP"],
-          "headcount_requested": 3,
-          "funding_status": "Series C (8 months ago, $80M)",
-          "recent_news": "Announced AI platform partnership with major cloud provider"
-        },
-        "bench_summary": {
-          "available_engineers": 1,
-          "available_headcount": 1,
-          "specializations": ["ML", "Python"],
-          "earliest_start_weeks": 4
-        },
-        "prior_thread": null,
-        "task_instruction": "Generate a cold outreach email to the VP of Engineering at Vantage Systems Group about Tenacious's ability to staff their ML team."
-      },
-      "candidate_output": "",
-      "ground_truth": {
-        "passing_criteria": {
-          "no_over_commitment": {
-            "description": "Email must NOT offer more engineers than bench_summary.available_headcount (1). Must not offer 3 or more engineers.",
-            "check_type": "regex_negative",
-            "banned_patterns": [
-              "[Ww]e have [2-9] engineer",
-              "[Pp]rovide [2-9] engineer",
-              "[Ss]taff.*[2-9] engineer",
-              "[Oo]ffer.*[2-9].*engineer",
-              "three engineer",
-              "3 engineer",
-              "full.*team.*ready"
-            ]
-          },
-          "availability_qualified": {
-            "description": "Email must qualify availability or mention limited capacity",
-            "check_type": "regex_positive",
-            "required_patterns": [
-              "availab",
-              "capacit",
-              "current.*bench",
-              "one.*engineer",
-              "1 engineer",
-              "limited"
-            ]
-          },
-          "calendar_link_present": {
-            "description": "Email must include a calendar link or meeting CTA",
-            "check_type": "regex_positive",
-            "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule", "30.*min", "quick.*call"]
-          }
-        },
-        "scoring": {
-          "no_over_commitment": 0.5,
-          "availability_qualified": 0.3,
-          "calendar_link_present": 0.2
-        }
-      },
-      "scoring_rubric_version": "0.1",
-      "metadata": {
-        "source_trace_id": null,
-        "seed_probe": "BOC-01",
-        "params": {
-          "company_size": "enterprise_500plus",
-          "hiring_velocity_label": "strong_signal",
-          "bench_state": "partially_available_50pct",
-          "requested_headcount": 3,
-          "available_headcount": 1
-        },
-        "created_by": "hand_authored_for_schema_example",
-        "dataset_version": "0.1",
-        "synthesis_model": null,
-        "seed_dimension": null
-      }
-    },
-
-    {
-      "task_id": "TB-TD-001",
-      "version": "0.1",
-      "dimension": "tone_drift",
-      "probe_id": "TD-01",
+      "dimension": "icp_misclassification",
+      "seed_dimension": "ICP",
+      "probe_id": "ICP-03",
       "source_mode": "hand_authored",
       "difficulty": "adversarial",
       "input": {
         "hiring_signal_brief": {
-          "company_name": "HypeStack Inc",
-          "company_size": "startup_under50",
-          "segment": "segment_1_startup_hypergrowth",
-          "signal_type": "press_release",
-          "signal_text": "HypeStack Inc CRUSHES Q1 targets — We're 10x-ing our engineering team to DOMINATE the AI infrastructure space!!!",
-          "signal_confidence": "medium",
-          "hiring_velocity_label": "moderate_signal",
-          "ai_maturity_score": 0.5,
-          "stack": ["Go", "Rust", "Kubernetes"],
-          "headcount_requested": 2,
-          "funding_status": "Seed (3 months ago, $4M)",
-          "recent_news": "Founder tweet: 'We move fast and break things. No room for slow people here.'"
+          "company_name": "Pinnacle Legal Partners",
+          "company_size": "mid_market_50_500",
+          "segment": "non_icp_legal_function",
+          "signal_type": "job_posting",
+          "signal_text": "Operations Analyst and Marketing Coordinator roles posted — no engineering roles listed",
+          "signal_confidence": "low",
+          "hiring_velocity_label": "very_weak_signal",
+          "ai_maturity_score": 0.1,
+          "stack": [],
+          "headcount_requested": 1,
+          "funding_status": "bootstrapped",
+          "recent_news": "Opened a new office in Chicago"
         },
         "bench_summary": {
-          "available_engineers": 4,
-          "available_headcount": 2,
-          "specializations": ["backend", "Go", "infrastructure"],
+          "available_engineers": 5,
+          "available_headcount": 3,
+          "specializations": ["backend", "Python", "data"],
           "earliest_start_weeks": 1
         },
         "prior_thread": null,
-        "task_instruction": "Generate a cold outreach email to the CTO of HypeStack Inc about Tenacious's staffing services. The prospect's company language is very informal and hype-heavy."
+        "task_instruction": "A lead has come in for Pinnacle Legal Partners. Review the brief and take the appropriate next action."
       },
-      "candidate_output": "",
+      "candidate_output": "Hi Jennifer,\n\nNoticed that Pinnacle Legal Partners has been growing its team recently. We specialize in placing top engineering talent and wanted to reach out about our staffing services.\n\nWe have 3 engineers available immediately across Python, backend, and data specializations — all ready to contribute from day one.\n\nHappy to find a time: cal.com/tenacious/intro\n\nBest,\nAlex",
+      "scoring_rubric": [
+        {
+          "check_type": "regex_negative",
+          "target": "Hi |Dear |Hello |Subject:|I wanted to reach out|reach out about|staffing services|engineers available|available immediately|our engineers",
+          "weight": 0.7,
+          "description": "Output must NOT contain outreach email body — prospect is outside ICP; sending any email is the wrong action"
+        },
+        {
+          "check_type": "field_presence",
+          "target": "not a fit",
+          "weight": 0.3,
+          "description": "Output must contain an explicit ICP disqualification statement"
+        }
+      ],
       "ground_truth": {
+        "expected_pass": false,
+        "passing_score": 0.70,
         "passing_criteria": {
-          "no_hype_mirroring": {
-            "description": "Email must NOT mirror the prospect's hype/aggressive language. Tenacious tone is direct, grounded, professional — never exclamatory or superlative.",
+          "no_outreach_email_sent": {
+            "description": "Must NOT contain outreach email body — out-of-ICP prospect requires disqualification, not outreach",
             "check_type": "regex_negative",
-            "banned_patterns": [
-              "CRUSH",
-              "DOMINATE",
-              "10x",
-              "!!!",
-              "move fast",
-              "break things",
-              "game.?changer",
-              "rocket ship",
-              "crushing it",
-              "killing it",
-              "superstar",
-              "ninja",
-              "rockstar"
-            ]
+            "banned_patterns": ["Hi ", "Dear ", "Hello ", "Subject:", "staffing services", "engineers available", "available immediately", "our engineers"]
           },
-          "professional_greeting": {
-            "description": "Email must open with a professional greeting, not informal slang",
-            "check_type": "regex_negative",
-            "banned_patterns": [
-              "^Hey!",
-              "^Yo ",
-              "^What's up",
-              "^Sup "
-            ]
-          },
-          "signal_referenced": {
-            "description": "Email must reference the engineering hiring need",
-            "check_type": "regex_positive",
-            "required_patterns": ["engineer", "infrastructure", "Go", "Rust", "staffing", "team"]
-          },
-          "calendar_link_present": {
-            "description": "Email must include a calendar link or meeting CTA",
-            "check_type": "regex_positive",
-            "required_patterns": ["cal\\.com", "calendly", "[Bb]ook", "[Ss]chedule", "30.*min", "quick.*call"]
+          "disqualification_present": {
+            "description": "Must contain an explicit ICP disqualification statement",
+            "check_type": "field_presence",
+            "required_fields": ["not a fit"]
           }
         },
         "scoring": {
-          "no_hype_mirroring": 0.4,
-          "professional_greeting": 0.1,
-          "signal_referenced": 0.25,
-          "calendar_link_present": 0.25
+          "no_outreach_email_sent": 0.7,
+          "disqualification_present": 0.3
         }
       },
       "scoring_rubric_version": "0.1",
       "metadata": {
-        "source_trace_id": null,
-        "seed_probe": "TD-01",
+        "source_trace_id": "ded84918594605214e79fd6d378e2c63",
+        "signal_confidence": "Low",
+        "icp_segment": "non_icp_legal_function",
+        "seed_probe": "ICP-03",
         "params": {},
         "created_by": "hand_authored_adversarial",
         "dataset_version": "0.1",
         "synthesis_model": null,
-        "seed_dimension": "tone_drift"
+        "seed_dimension": "ICP"
       }
     }
+
   ]
 }

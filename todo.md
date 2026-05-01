@@ -148,20 +148,20 @@ Evaluation Bench/
   - Log the test call in `cost_log.csv`: `timestamp,preflight,deepseek/deepseek-chat,api key test,$0.00`
   - **Success**: Test call returns a response; cost_log.csv has first row
 
-- [ ] **P1-03**: Verify Google Colab T4 GPU runtime
+- [x] **P1-03**: Verify Google Colab T4 GPU runtime
   - Open new Colab notebook → Runtime → Change runtime type → T4 GPU → Save
   - Run cell: `!nvidia-smi`
   - Confirm output shows "Tesla T4" and ~15GB free memory
   - **Success**: `nvidia-smi` output contains "T4"
 
-- [ ] **P1-04**: (Optional) Create RunPod account as Colab fallback
+- [ ] **P1-04**: (Optional) Create RunPod account as Colab fallback (Its skipped)
   - Required only if Colab disconnects during training run on Day 5
   - Go to runpod.io → create account → apply free credits if available
   - Identify cheapest GPU pod with ≥16GB VRAM (RTX 3090 or A4000, ~$0.34/hr)
   - Do NOT spin up a pod now — just confirm account is ready and credits are available
   - **Success**: RunPod account exists and has payment method or credits
 
-- [ ] **P1-05**: Set up local Python 3.11+ environment
+- [x] **P1-05**: Set up local Python 3.11+ environment
   - Verify: `python --version` shows 3.11.x or 3.12.x
   - Install dependencies:
     ```bash
@@ -174,7 +174,7 @@ Evaluation Bench/
   - Write `requirements.txt` with pinned versions from `pip freeze` output for the above packages
   - **Success**: Verify command prints version numbers without ImportError
 
-- [ ] **P1-06**: Run Unsloth starter notebook on Colab T4
+- [x] **P1-06**: Run Unsloth starter notebook on Colab T4
   - Open Unsloth Qwen fine-tuning example notebook from Unsloth GitHub/docs
   - Swap in a 5-row dummy JSONL dataset (write one manually — 5 system/user/assistant triplets)
   - Run full notebook end-to-end: model load → LoRA config → train → save adapter
@@ -183,7 +183,7 @@ Evaluation Bench/
   - Note: first-run kernel compile takes 6–10 minutes — expected, do not interrupt
   - **Success**: Adapter appears at `huggingface.co/{hf_username}/tenacious-bench-dummy-test` with `adapter_config.json`
 
-- [ ] **P1-07**: Inventory Week 10 artifacts
+- [x] **P1-07**: Inventory Week 10 artifacts
   - Confirm these files exist and are non-empty:
     - `week_10_artifacts/trace_log.jsonl` (must have ≥61 lines with non-empty trace_id)
     - `week_10_artifacts/probe_library.md`
@@ -195,7 +195,7 @@ Evaluation Bench/
   - Confirm these 10 trace IDs are present in trace_log.jsonl: `bcef6c8e`, `9880a74a`, `699348eb`, `14789f6e`, `4a7f4b2a`, `c572a4a3`, `8630d83f`, `9d39b3e9`, `4f46e62b`, `ded84918`
   - **Success**: Parse command prints "61 traces loaded" (or more); no JSONDecodeError
 
-- [ ] **P1-08**: Review schema.json starter and validate a dummy task
+- [x] **P1-08**: Review schema.json starter and validate a dummy task
   - Read `tenacious_bench_v0.1/schema.json` if it exists from a prior session; otherwise note it will be written in P3-02
   - Write a 3-field dummy task JSON by hand:
     ```json
@@ -211,7 +211,7 @@ Evaluation Bench/
     ```
   - **Success**: Validation either passes OR raises a clear error explaining which required field is missing (both are acceptable — confirms the library works)
 
-- [ ] **P1-09**: Initialize `cost_log.csv`
+- [x] **P1-09**: Initialize `cost_log.csv`
   - Create file with header: `timestamp,bucket,model,purpose,cost_usd`
   - Add one row for every action taken in this phase (even $0.00 rows):
     - Row for OpenRouter API key test
@@ -226,56 +226,56 @@ Evaluation Bench/
 **Time estimate: 90 minutes**
 **Note: Each memo is ~400–500 words. Graded on the DISAGREEMENT section, not the summary.**
 
-- [ ] **P2-01**: Write `synthesis_memos/liu_2024_synthetic_data.md`
+- [x] **P2-01**: Write `synthesis_memos/liu_2024_synthetic_data.md`
   - Section 1 — Key Claim: synthetic data works when ground truth is verifiable; fails when it contains hallucinations or covers only narrow scenarios
   - Section 2 — Project Connection: our programmatic mode produces machine-verifiable ground truth (rule-based scorer); `judge_filter.py` removes low-quality outputs; 10-dimension sweep avoids narrow coverage
   - Section 3 — Disagreement: Liu recommends multi-agent simulations for interactive generation tasks; we reject this for dev phase because our documented failure modes (SOC-01, SOC-02) are single-step generation failures, not multi-turn trajectory failures — adding multi-agent simulation would introduce noise without signal gain
   - Evidence for disagreement: cite trace `bcef6c8e` (6-turn task that failed at generation step 1, not at turn 6) and trace `ded84918` (4-turn task where ICP failure occurred at step 1)
   - **Success**: File exists, contains all 3 sections, disagreement cites at least one trace ID
 
-- [ ] **P2-02**: Write `synthesis_memos/gebru_pushkarna_datasheets.md`
+- [x] **P2-02**: Write `synthesis_memos/gebru_pushkarna_datasheets.md`
   - Section 1 — Key Claim: datasets must be documented concurrently with creation; Pushkarna adds Telescopic/Periscopic/Microscopic scope structure
   - Section 2 — Project Connection: `datasheet.md` is written alongside dataset generation; Microscopic scope documents WHY threshold values (e.g., Jaccard < 0.60) were chosen
   - Section 3 — Disagreement: Pushkarna's full 31-theme Data Card framework is designed for large industrial dataset releases; we scope to Gebru's 7 sections + Pushkarna's 3 scopes only, because our dataset is a small research artifact (≤335 tasks), not an industrial release; applying all 31 themes would add documentation overhead that exceeds the size of the dataset itself
   - Justify by dataset size: cite ≤335 tasks as the constraint that makes a reduced framework appropriate
   - **Success**: File exists, disagreement explicitly mentions the 31-theme scope reduction with size justification
 
-- [ ] **P2-03**: Write `synthesis_memos/chen_2025_contamination.md`
+- [x] **P2-03**: Write `synthesis_memos/chen_2025_contamination.md`
   - Section 1 — Key Claim: n-gram overlap alone misses paraphrased contamination; embedding similarity (cosine) is required for complete detection; protection strategies include sealing held-out and keeping labels private
   - Section 2 — Project Connection: 3-check protocol (8-gram zero tolerance, Jaccard <0.60, time-shift 2026-04); held-out gitignored; programmatic mode has near-zero collision rate by design
   - Section 3 — Disagreement: Chen recommends embedding cosine similarity at threshold < 0.85; we use Jaccard < 0.60 as the dev-phase proxy (no embedding model required); full cosine check is planned for v1.0 but excluded from dev phase to stay within the $10 budget and avoid a model dependency in the contamination pipeline
   - Cite cost constraint explicitly: embedding calls at scale add ~$0.50–1.00 per run against our $10 total
   - **Success**: File exists, disagreement explains the Jaccard-for-cosine substitution with budget justification
 
-- [ ] **P2-04**: Write `synthesis_memos/gu_llm_as_judge.md`
+- [x] **P2-04**: Write `synthesis_memos/gu_llm_as_judge.md`
   - Section 1 — Key Claim: LLM judges suffer from self-preference bias; the same model must never generate AND judge the same task; rule-based evaluation is preferred when tasks have a single verifiable correct answer
   - Section 2 — Project Connection: scoring system uses 4 rule-based check types, no LLM; model rotation policy ensures Claude generates synthesis tasks but never judges them; Qwen/DeepSeek used as judge model family
   - Section 3 — No core disagreement; instead: nuance on scope — Gu recommends LLM-as-Judge for open-ended tasks where rubrics are subjective; our failure modes have machine-verifiable correct answers (banned phrase present/absent, word count ≤120, signal reference present/absent); Gu's own paper endorses rule-based over LLM-based exactly in this condition
   - Cite specific check types: `regex_negative` for banned phrases, `length_check` for word count, `regex_positive` for signal reference
   - **Success**: File exists, explains why rule-based is appropriate for our specific check types (not just that we chose it)
 
-- [ ] **P2-05**: Write `synthesis_memos/lima_2023.md`
+- [x] **P2-05**: Write `synthesis_memos/lima_2023.md`
   - Section 1 — Key Claim (Superficial Alignment Hypothesis): a pretrained model already contains its knowledge; SFT teaches format and style, not new knowledge; 1,000 high-quality examples outperform 52,000 mediocre ones
   - Section 2 — Project Connection: Qwen 3.5 already knows what a professional email looks like; SOC-01 is a calibration gap (model fails to constrain claim strength to match signal confidence), not a knowledge gap; 1,000–3,000 pairs is enough to recalibrate this behavior
   - Section 3 — Disagreement / Scale Nuance: LIMA was validated on a 65B model; our backbone is 2B; at smaller scale the pretrained knowledge base is narrower, so the model may need closer to 3,000 pairs (not 1,000) to achieve equivalent calibration; we set our target at 1,000–3,000 (not 1,000) to account for backbone scale difference
   - Cite backbone choice documentation: Qwen 3.5 2B selected for T4 fit, not for raw capability
   - **Success**: File exists, scale nuance explicitly addresses the 65B vs. 2B difference
 
-- [ ] **P2-06**: Write `synthesis_memos/magpie_2024.md`
+- [x] **P2-06**: Write `synthesis_memos/magpie_2024.md`
   - Section 1 — Key Claim: aligned LLMs can self-generate training data from a structured pre-query template with no human seeds; domain-specific system prompts steer generation to narrow domains; produces more diverse data than Self-Instruct
   - Section 2 — Project Connection: synthesis mode uses Claude Sonnet 4.6 with Tenacious hiring brief format as structured anchor prompt; this is Magpie applied to a B2B sales domain
   - Section 3 — Disagreement: Magpie uses zero-seed generation (only a system prompt, no example inputs); we use seed-informed generation (structured hiring brief template + signal parameters as anchors) because our domain is too narrow for zero-seed generation to stay on-distribution; without a brief template, the model generates plausible-sounding but off-distribution tasks (wrong industry, wrong signal type)
   - Cite Magpie's own finding: system prompt specificity directly controls domain focus; our brief template is a maximally specific system prompt
   - **Success**: File exists, disagreement explains zero-seed vs. seed-informed distinction with domain-narrowness justification
 
-- [ ] **P2-07**: Write `synthesis_memos/tulu3_2024.md`
+- [x] **P2-07**: Write `synthesis_memos/tulu3_2024.md`
   - Section 1 — Key Claim: effective SFT mixing is iterative and benchmark-driven; small amounts of domain-specific data produce large targeted skill gains; diverse conversational data prevents general capability degradation; domain-specific and general data are additive
   - Section 2 — Project Connection: 4-mode mix (30% trace / 30% programmatic / 25% synthesis / 15% hand-authored) mirrors Tülu 3's mixing philosophy; sealed held-out tests skill transfer, not memorization
   - Section 3 — Disagreement: Tülu 3 iteratively ablates data mixes across full training runs (939k prompts); our budget and scope do not permit iterative ablation; we use a fixed 30/30/25/15 split informed by failure-dimension coverage targets, not by benchmark-driven feedback loops; iterative mixing only matters at scale — LIMA shows saturation at 3,000 pairs, which is below the threshold where mixing ratios have measurable impact
   - Cite scale constraint: $10 budget + T4 GPU allows at most 2–3 training runs, not 10+ ablation runs
   - **Success**: File exists, disagreement explicitly argues that iterative mixing is a scale-dependent technique not applicable at our dataset size
 
-- [ ] **P2-08**: Create `synthesis_memos/` directory and commit all 7 memos
+- [x] **P2-08**: Create `synthesis_memos/` directory and commit all 7 memos
   - Verify directory contains exactly these 7 files:
     - `liu_2024_synthetic_data.md`
     - `gebru_pushkarna_datasheets.md`
@@ -293,7 +293,7 @@ Evaluation Bench/
 ## PHASE 3 — Act I: Audit and Schema Design
 **Time estimate: 80 minutes**
 
-- [ ] **P3-01**: Write `audit_memo.md`
+- [x] **P3-01**: Write `audit_memo.md`
   - Maximum 600 words — verify with `python -c "print(len(open('audit_memo.md').read().split()))"` before commit
   - Required structure:
     - Section 1 — The Gap: one paragraph stating what τ²-Bench retail cannot grade about Tenacious-specific behavior and why
@@ -312,7 +312,7 @@ Evaluation Bench/
   - Verify word count before commit: must be ≤600 words
   - **Success**: Word count ≤600; all 9 probe IDs present; ≥5 trace IDs with metadata; 6 distinct gap categories named
 
-- [ ] **P3-02**: Design `schema.json`
+- [x] **P3-02**: Design `schema.json`
   - JSON Schema draft-07 format
   - Required fields per task:
     - `task_id` (string, pattern: `TB-[A-Z]{2,3}-[0-9]{3}`)
@@ -328,7 +328,7 @@ Evaluation Bench/
   - Pass threshold: weighted score ≥ 0.70
   - **Success**: `python -c "import json; s = json.load(open('schema.json')); print('valid JSON')"` exits 0
 
-- [ ] **P3-03**: Write 3 example tasks conforming to `schema.json`
+- [x] **P3-03**: Write 3 example tasks conforming to `schema.json`
   - Example 1 (BOC dimension, programmatic, medium difficulty):
     - Input: bench_summary shows 2 engineers available, hiring_signal_brief shows moderate signal, prior_thread_context empty
     - Candidate output: email promising 4 engineers within 2 weeks
@@ -347,7 +347,7 @@ Evaluation Bench/
     - Ground truth: `expected_pass: false`
   - **Success**: All 3 tasks parse as valid JSON; `scoring_evaluator.py` (P3-04) can score all 3 without KeyError
 
-- [ ] **P3-04**: Write `scoring_evaluator.py`
+- [x] **P3-04**: Write `scoring_evaluator.py`
   - CLI: `python scoring_evaluator.py --task <task_json_path> --output "<email_string>"`
   - Also supports: `python scoring_evaluator.py --schema schema.json --example N` (runs against example task N in schema)
   - Core logic:
@@ -373,7 +373,7 @@ Evaluation Bench/
   - Run against all 3 example tasks from P3-03 and print scores to stdout
   - **Success**: `python scoring_evaluator.py` exits code 0; prints 3 score dicts; running twice produces identical output
 
-- [ ] **P3-05**: Write `methodology.md` (first draft)
+- [x] **P3-05**: Write `methodology.md` (first draft)
   - Required sections:
     1. **Path Declaration**: "This project follows Path A — LoRA fine-tuning of the generation component (`compose_outreach()`) of the Tenacious Conversion Engine using Qwen 3.5 2B as backbone."
     2. **Path Justification**: cite ≥3 trace IDs showing SOC failure mode as the primary gap; cite LIMA (format gap, not knowledge gap) and Gu et al. (rule-based scoring validates detection)
