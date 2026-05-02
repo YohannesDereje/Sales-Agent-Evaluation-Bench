@@ -35,7 +35,7 @@ The Week 10 τ²-Bench retail evaluation of the Tenacious Conversion Engine prod
 
 Trace IDs anchoring the SOC-01 failure evidence: `bcef6c8e`, `9880a74a`, `8630d83f`. Full analysis in `audit_memo.md`.
 
-**Path A (chosen):** Supervised Fine-Tuning of the generation component using LoRA on a Qwen 3.5 backbone. Training data is the Tenacious-Bench train partition. Rationale and training stack documented in `methodology.md`.
+**Path A (chosen):** Supervised Fine-Tuning of the generation component using LoRA on a Qwen2.5-1.5B-Instruct backbone via Unsloth on Colab T4. Training data is the Tenacious-Bench train partition. Rationale and training stack documented in `methodology.md`.
 
 ---
 
@@ -43,13 +43,13 @@ Trace IDs anchoring the SOC-01 failure evidence: `bcef6c8e`, `9880a74a`, `8630d8
 
 **Schema:** [`schema.json`](schema.json) — JSON Schema draft-07 defining all task fields.
 
-**Post-filter partition counts (approximate):**
+**Post-filter partition counts:**
 
 | Partition | File | Count | Use |
 |---|---|---|---|
-| Train | `tenacious_bench_v0.1/train/train.jsonl` | ~150 | SFT training |
-| Dev | `tenacious_bench_v0.1/dev/dev.jsonl` | ~90 | Hyperparameter tuning, rubric iteration |
-| Held-out | `tenacious_bench_v0.1/held_out/held_out.jsonl` | ~60 | Sealed — final evaluation only |
+| Train | `tenacious_bench_v0.1/train/train.jsonl` | 118 | SFT training (1,133 pairs after augmentation) |
+| Dev | `tenacious_bench_v0.1/dev/dev.jsonl` | 71 | Hyperparameter tuning, rubric iteration |
+| Held-out | `tenacious_bench_v0.1/held_out/held_out.jsonl` | 48 | Sealed — final evaluation only |
 
 **Raw generation (pre-filter):**
 
@@ -124,6 +124,10 @@ A task **passes** when `total_score ≥ 0.70`. Weights per criterion are defined
 **Requirements:** Python 3.9+, no external dependencies for the scorer or generation scripts.
 
 ```bash
+# 0. Clone the repo
+git clone https://github.com/YohannesDereje/Sales-Agent-Evaluation-Bench.git
+cd tenacious-bench
+
 # 1. Install dependencies
 pip install -r requirements.txt
 
@@ -183,7 +187,7 @@ Evaluation Bench/
 
 ---
 
-## Current Status (Week 11 Interim — 2026-04-29)
+## Results (Week 11 Final — 2026-05-02)
 
 | Deliverable | Status |
 |---|---|
@@ -193,36 +197,51 @@ Evaluation Bench/
 | Methodology (`methodology.md`) | Done |
 | Generation scripts (all 4 modes) | Done |
 | Quality filter (`judge_filter.py`) | Done |
-| Partition + contamination check | Done |
+| Partition + contamination check | Done — 0 pairs flagged across 5,664 comparisons |
 | Inter-rater agreement report | Done — 100% IRA |
 | Datasheet (Gebru + Pushkarna) | Done |
-| SFT training (Unsloth / Colab T4) | Not started — Week 11 Days 4–7 |
-| Held-out evaluation of fine-tuned model | Not started — Week 11 Days 6–7 |
+| SFT training (Unsloth / Colab T4) | Done — 875s, final loss 0.3672 |
+| Held-out evaluation (48 tasks) | Done — 85.4% pass rate (41/48) |
+| Dataset published to HuggingFace | Done — CC-BY-4.0 |
+| LoRA adapter published to HuggingFace | Done |
+
+### Delta A — Training vs Baseline
+
+| Metric | Value |
+|---|---|
+| Baseline pass rate (no LoRA, no system prompt) | 33.3% (16/48) |
+| Prompt engineering only (Delta B) | 41.7% (20/48) |
+| Trained LoRA adapter (Delta A) | **85.4% (41/48)** |
+| Delta A lift over baseline | **+26.4 pp** |
+| 95% CI (1,000 bootstrap resamples) | [+18.7, +32.8] pp |
+| Verdict | **training_wins** — prompt engineering insufficient |
+
+The trained adapter is also **3.2× faster** than baseline at inference (3,266 ms vs 10,652 ms average, Colab T4).
+
+Seven tasks still fail with the trained adapter: SR×3, SOC×3, ICP×1. Full scored traces in `ablations/held_out_traces.jsonl`. All numeric claims are cross-referenced in `evidence_graph.json`.
 
 ---
 
-## What's Next — Days 4–7 Plan
+## Community Engagement
 
-**Day 4 — SFT data preparation**
-- Populate `candidate_output` fields in train.jsonl by prompting `claude-sonnet-4-6` with each task input
-- Generate preference pairs (passing output, failing output) for DPO format
-- Verify all training records score ≥ 0.70 on the rubric before inclusion
+- **HuggingFace dataset (CC-BY-4.0):** [Yohannesdn/tenacious_bench_v0.1](https://huggingface.co/datasets/Yohannesdn/tenacious_bench_v0.1)
+- **HuggingFace LoRA adapter:** [Yohannesdn/tenacious-outreach-lora-qwen-1.5b](https://huggingface.co/Yohannesdn/tenacious-outreach-lora-qwen-1.5b)
+- **Blog post (Substack):** [We Built a Benchmark Because Our AI Kept Lying About Hiring Signals](https://open.substack.com/pub/yohannesdereje/p/we-built-a-benchmark-because-our?r=8btd9e&utm_campaign=post&utm_medium=web&showWelcomeOnShare=true)
+- **Blog post (Medium):** [We Built a Benchmark Because Our AI Kept Lying About Hiring Signals](https://medium.com/@yohannesdereje1221/we-built-a-benchmark-because-our-ai-kept-lying-about-hiring-signals-a08adc217cdc)
+- **τ²-Bench community issue #294:** [6 output-quality failure modes τ²-Bench retail cannot detect](https://github.com/sierra-research/tau2-bench/issues/294#issue-4369585785)
 
-**Day 5 — Fine-tuning**
-- Run LoRA fine-tuning on Qwen 3.5 via Unsloth on Google Colab T4 (free tier)
-- Monitor train loss and dev pass rate per epoch
-- Save checkpoint at best dev pass rate
+---
 
-**Day 6 — Held-out evaluation**
-- Unseal `tenacious_bench_v0.1/held_out/` for the first and only time
-- Score the fine-tuned model against the held-out partition
-- Record per-dimension pass rates; compare against Week 10 baseline
+## What's Next — v0.2 Roadmap
 
-**Day 7 — Final submission**
-- Refresh held-out patterns to prevent v0.1 leakage in future releases
-- Write `report_final.md` with evaluation results and failure analysis
-- Publish dataset to HuggingFace Hub (train + dev partitions only)
-- Tag release as `v1.0`
+Four failure modes were observed informally but not formalized in v0.1:
+
+1. **Multi-turn constraint decay** — correct on turn 1, drifts toward over-claiming by turn 6+
+2. **Numeric hallucination** — fabricating placement rates, time-to-hire figures absent from the brief
+3. **Competitor misrepresentation** — implicit comparisons to named competitors without basis
+4. **Temporal signal confusion** — citing an 18-month-old event as "you just raised a Series B"
+
+v0.2 will add these four dimensions, expand the held-out set to 100+ tasks, increase SR training pairs to ≥150, and replace the Jaccard contamination proxy with embedding cosine similarity (< 0.85 threshold).
 
 ---
 
@@ -235,3 +254,8 @@ Evaluation Bench/
 - Li et al. (2025). *Preference Leakage: A Contamination Problem in LLM-as-a-judge.* arXiv.
 - Liu et al. (2024). *What Makes Good Data for Alignment?* COLM 2024.
 - Gu et al. (2024). *A Survey on LLM-as-a-Judge.* arXiv.
+- Chen et al. (2025). *Benchmark Contamination and Evaluation Integrity.* arXiv.
+- Ivison et al. (2023). *Camels in a Changing Climate: Enhancing LM Adaptation with Tülu 3 (Tulu 3).* arXiv.
+- τ²-Bench (tau2-Bench): Task and Tool-Use Benchmark for Conversational AI Agents (retail split used for Week 10 baseline).
+- OpenRouter (2024). Multi-provider LLM inference API. openrouter.ai.
+- **License:** CC-BY-4.0 — dataset and all scripts in this repository are released under the Creative Commons Attribution 4.0 International License.

@@ -5,9 +5,22 @@ tenacious_bench_v0.1/held_out/
 *.html
 *.pdf
 
-# Working / personal files
+# Working / planning notes — not deliverables
+todo.md
+todo_descriptions.md
 todos.md
+random_notes.md
+Reading_summaries.md
+readings_reference.md
 gemini_leader_prompt.md
+
+# Raw publication drafts — already published elsewhere
+blog_post.md
+github_issue_body.md
+hf_dataset_card.md
+
+# Claude memory system — local only
+memory/
 
 # Python
 __pycache__/

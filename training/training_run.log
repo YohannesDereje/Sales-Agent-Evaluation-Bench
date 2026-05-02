@@ -1,0 +1,15 @@
+{
+  "backbone": "unsloth/Qwen2.5-1.5B-Instruct",
+  "lora_r": 16,
+  "lora_alpha": 32,
+  "lora_dropout": 0.05,
+  "learning_rate": 0.0002,
+  "epochs": 3,
+  "per_device_batch": 2,
+  "grad_accum": 4,
+  "fp16": true,
+  "seed": 42,
+  "train_pairs": 1133,
+  "train_runtime_s": 875.8659,
+  "final_train_loss": 0.3671717333122039
+}

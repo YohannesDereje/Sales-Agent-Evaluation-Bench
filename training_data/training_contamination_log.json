@@ -1,0 +1,9 @@
+{
+  "training_pairs_checked": 1133,
+  "held_out_tasks_checked": 4,
+  "held_out_ngrams_indexed": 16,
+  "pairs_removed": 0,
+  "pairs_retained": 1133,
+  "flagged": [],
+  "summary": "PASS"
+}

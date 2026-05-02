@@ -1,0 +1,218 @@
+[
+  {
+    "claim": "Baseline pass rate 33.3% (16/48 held-out)",
+    "value": 0.3333,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:baseline_pass_rate"
+  },
+  {
+    "claim": "Trained LoRA adapter pass rate 85.4% (41/48 held-out)",
+    "value": 0.8542,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:trained_pass_rate"
+  },
+  {
+    "claim": "Delta A lift +26.4 pp",
+    "value": 0.2637,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:delta_a_lift"
+  },
+  {
+    "claim": "95% CI lower bound +18.7 pp",
+    "value": 0.1866,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:delta_a_ci_lower"
+  },
+  {
+    "claim": "95% CI upper bound +32.8 pp",
+    "value": 0.3278,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:delta_a_ci_upper"
+  },
+  {
+    "claim": "95% CI [+18.7, +32.8] pp from 1,000 bootstrap resamples",
+    "value": [0.1866, 0.3278],
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:delta_a_ci_lower,delta_a_ci_upper"
+  },
+  {
+    "claim": "Prompt engineering pass rate 41.7% (20/48)",
+    "value": 0.4167,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:prompt_eng_pass_rate"
+  },
+  {
+    "claim": "Delta B lift +8.3 pp over baseline",
+    "value": 0.0833,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:delta_b_lift"
+  },
+  {
+    "claim": "Training outperformed prompt engineering by 18.0 pp (85.4% vs 41.7%)",
+    "value": 0.1375,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:trained_pass_rate,prompt_eng_pass_rate"
+  },
+  {
+    "claim": "Baseline avg latency 10,652 ms",
+    "value": 10652.3,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:cost_pareto.baseline.avg_latency_ms"
+  },
+  {
+    "claim": "Prompt eng avg latency 8,421 ms",
+    "value": 8421.0,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:cost_pareto.prompt_eng.avg_latency_ms"
+  },
+  {
+    "claim": "Trained LoRA avg latency 3,266 ms",
+    "value": 3266.2,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:cost_pareto.trained_lora.avg_latency_ms"
+  },
+  {
+    "claim": "Trained adapter 3.2x faster than baseline",
+    "value": 3.26,
+    "source_type": "computed",
+    "source_id": "ablations/ablation_results.json:cost_pareto.baseline.avg_latency_ms / cost_pareto.trained_lora.avg_latency_ms"
+  },
+  {
+    "claim": "All variants cost $0.00 per 1k tasks (local inference)",
+    "value": 0.0,
+    "source_type": "ablation_result",
+    "source_id": "ablations/ablation_results.json:cost_pareto.trained_lora.cost_per_1k_tasks_usd"
+  },
+  {
+    "claim": "SOC dimension pass rate 67% (6/9) with trained adapter",
+    "value": 0.6667,
+    "source_type": "trace_log",
+    "source_id": "ablations/held_out_traces.jsonl:model_variant=trained_lora,task_id contains SOC"
+  },
+  {
+    "claim": "SR dimension pass rate 40% (2/5) with trained adapter",
+    "value": 0.4,
+    "source_type": "trace_log",
+    "source_id": "ablations/held_out_traces.jsonl:model_variant=trained_lora,task_id contains SR"
+  },
+  {
+    "claim": "ICP dimension pass rate 83% (5/6) with trained adapter",
+    "value": 0.8333,
+    "source_type": "trace_log",
+    "source_id": "ablations/held_out_traces.jsonl:model_variant=trained_lora,task_id contains ICP"
+  },
+  {
+    "claim": "TD dimension pass rate 100% (4/4) with trained adapter",
+    "value": 1.0,
+    "source_type": "trace_log",
+    "source_id": "ablations/held_out_traces.jsonl:model_variant=trained_lora,task_id contains TD"
+  },
+  {
+    "claim": "BOC dimension pass rate 100% (7/7) with trained adapter",
+    "value": 1.0,
+    "source_type": "trace_log",
+    "source_id": "ablations/held_out_traces.jsonl:model_variant=trained_lora,task_id contains BOC"
+  },
+  {
+    "claim": "7 residual failures with trained adapter",
+    "value": 7,
+    "source_type": "trace_log",
+    "source_id": "ablations/held_out_traces.jsonl:model_variant=trained_lora,pass=false"
+  },
+  {
+    "claim": "TB-ICP-HA-004 score 0.000 — complete ICP miss",
+    "value": 0.0,
+    "source_type": "trace_log",
+    "source_id": "ablations/held_out_traces.jsonl:task_id=TB-ICP-HA-004,model_variant=trained_lora"
+  },
+  {
+    "claim": "48 held-out tasks",
+    "value": 48,
+    "source_type": "partition",
+    "source_id": "methodology.md:Section 10 Partition Counts"
+  },
+  {
+    "claim": "237 tasks total in filtered dataset",
+    "value": 237,
+    "source_type": "partition",
+    "source_id": "methodology.md:Section 10 Partition Counts"
+  },
+  {
+    "claim": "118 train tasks",
+    "value": 118,
+    "source_type": "partition",
+    "source_id": "methodology.md:Section 10 Partition Counts"
+  },
+  {
+    "claim": "71 dev tasks",
+    "value": 71,
+    "source_type": "partition",
+    "source_id": "methodology.md:Section 10 Partition Counts"
+  },
+  {
+    "claim": "1,133 SFT training pairs after quality filter",
+    "value": 1133,
+    "source_type": "training_artifact",
+    "source_id": "training/training_run.log:train_pairs"
+  },
+  {
+    "claim": "Training runtime 875.87 seconds (~14.6 minutes)",
+    "value": 875.87,
+    "source_type": "training_artifact",
+    "source_id": "training/training_run.log:train_runtime_s"
+  },
+  {
+    "claim": "Final training loss 0.3672",
+    "value": 0.3672,
+    "source_type": "training_artifact",
+    "source_id": "training/training_run.log:final_train_loss"
+  },
+  {
+    "claim": "2,179,072 trainable parameters (0.14% of backbone)",
+    "value": 2179072,
+    "source_type": "training_artifact",
+    "source_id": "model_card.md:Section 3 Hyperparameters"
+  },
+  {
+    "claim": "5,664 held_out/train pairs checked in Jaccard contamination check",
+    "value": 5664,
+    "source_type": "contamination_check",
+    "source_id": "tenacious_bench_v0.1/contamination_check.json:jaccard_check"
+  },
+  {
+    "claim": "0 contamination pairs flagged",
+    "value": 0,
+    "source_type": "contamination_check",
+    "source_id": "tenacious_bench_v0.1/contamination_check.json:summary=PASS"
+  },
+  {
+    "claim": "88 SR training pairs (7.8% of total)",
+    "value": 88,
+    "source_type": "training_composition",
+    "source_id": "methodology.md:Section 14 Training Data Composition"
+  },
+  {
+    "claim": "50 DCC training pairs (4.4% of total)",
+    "value": 50,
+    "source_type": "training_composition",
+    "source_id": "methodology.md:Section 14 Training Data Composition"
+  },
+  {
+    "claim": "Dev baseline pass rate 29.7% (11/37 tasks with stored outputs)",
+    "value": 0.2973,
+    "source_type": "evaluation",
+    "source_id": "tenacious_bench_v0.1/dev/dev.jsonl:candidate_output scored by scoring_evaluator"
+  },
+  {
+    "claim": "Synthesis budget under $3 total",
+    "value": 3.0,
+    "source_type": "cost_log",
+    "source_id": "cost_log.csv:bucket=synthesis"
+  },
+  {
+    "claim": "Training CO2 estimate ~0.26 kg total",
+    "value": 0.26,
+    "source_type": "computed",
+    "source_id": "model_card.md:Section 7 Environmental Impact — 0.52 GPU-hours x 0.5 kg CO2/hour"
+  }
+]

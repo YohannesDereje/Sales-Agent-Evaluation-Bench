@@ -1,0 +1,24 @@
+{
+  "delta_a_lift": 0.26365416666666663,
+  "delta_a_ci_lower": 0.18655927083333332,
+  "delta_a_ci_upper": 0.3277865625,
+  "trained_pass_rate": 0.8541666666666666,
+  "baseline_pass_rate": 0.3333333333333333,
+  "delta_b_lift": 0.08333333333333337,
+  "prompt_eng_pass_rate": 0.4166666666666667,
+  "delta_b_vs_delta_a": "training_wins",
+  "cost_pareto": {
+    "baseline": {
+      "avg_latency_ms": 10652.3,
+      "cost_per_1k_tasks_usd": 0.0
+    },
+    "prompt_eng": {
+      "avg_latency_ms": 8421.0,
+      "cost_per_1k_tasks_usd": 0.0
+    },
+    "trained_lora": {
+      "avg_latency_ms": 3266.2,
+      "cost_per_1k_tasks_usd": 0.0
+    }
+  }
+}

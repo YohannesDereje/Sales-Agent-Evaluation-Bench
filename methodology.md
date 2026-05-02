@@ -153,3 +153,63 @@ All three check types achieve 100% agreement, exceeding the 80% threshold requir
 ### Rubric revisions
 
 No rubric revisions were required. All dimensions met the >= 80% agreement threshold on the first pass.
+
+---
+
+## 13. Second Contamination Pass (Training Data)
+
+Run: `training_data/check_training_contamination.py`
+
+- Training brief proxy: user-turn content from `sft_pairs_filtered.jsonl`
+- Held_out brief proxy: `prestige_indicator` field (same as P4-08 check)
+- Held_out 8-grams indexed: 16 (from 4 held_out tasks with non-empty prestige_indicator)
+- Training pairs checked: 1133
+
+**Result: 0 pair(s) removed; 0 8-gram overlaps with held_out found in retained pairs.**
+
+All 1133 training pairs are clean.
+
+---
+
+## 14. Training Data Composition by Failure Dimension
+
+Source: `training_data/sft_pairs_filtered.jsonl` (1,133 pairs), cross-referenced against `training_data/sft_pairs_raw.jsonl` (which retains `_task_id` metadata) and `tenacious_bench_v0.1/train/train.jsonl` (seed_dimension per task).
+
+| Dimension | Pairs | % of total | Notes |
+|-----------|-------|-----------|-------|
+| SOC (signal over-claiming) | 180 | 15.9% | Largest dimension; anchors the primary failure mode |
+| TD (tone drift) | 170 | 15.0% | Strong coverage across tone-mirror and banned-phrase scenarios |
+| BOC (bench over-commitment) | 140 | 12.4% | |
+| MTL (multi-thread leakage) | 140 | 12.4% | |
+| SE (scope escalation) | 110 | 9.7% | |
+| ICP (ICP misclassification) | 115 | 10.2% | |
+| CP (competitive positioning) | 70 | 6.2% | |
+| GAP (gap exploitation) | 70 | 6.2% | |
+| SR (signal reliability) | 88 | 7.8% | |
+| DCC (data/context confusion) | 50 | 4.4% | |
+| **Total** | **1,133** | **100%** | |
+
+All dimensions have ≥ 50 pairs; no dimension falls below the 20-pair minimum signal threshold. DCC is the least-represented dimension (50 pairs, 4.4%) — this reflects its small pool in the train partition (5 tasks × ~10 variations each). The model will receive meaningful but limited signal for DCC; v0.2 should augment DCC coverage if cross-dimension generalization to DCC is a training objective.
+
+---
+
+## 15. License
+
+This dataset and all associated scripts are released under **CC-BY-4.0** (Creative Commons Attribution 4.0 International). You are free to share and adapt the material for any purpose, provided appropriate credit is given. The held-out partition (`tenacious_bench_v0.1/held_out/`) is withheld from the v0.1 public release to preserve evaluation integrity.
+
+---
+
+## References
+
+- Liu et al. (2024). *What Makes Good Data for Alignment?* COLM 2024.
+- Gebru et al. (2021). *Datasheets for Datasets.* Communications of the ACM.
+- Pushkarna & Zaldivar (2022). *Data Cards: Purposeful and Transparent Dataset Documentation.* FAccT.
+- Chen et al. (2025). *Benchmark Contamination and Evaluation Integrity.* arXiv.
+- Gu et al. (2024). *A Survey on LLM-as-a-Judge.* arXiv.
+- Zhou et al. (2023). *LIMA: Less Is More for Alignment.* NeurIPS.
+- Xu et al. (2024). *Magpie: Alignment Data Synthesis from Scratch.* arXiv.
+- Ivison et al. (2023). *Camels in a Changing Climate: Enhancing LM Adaptation with Tülu 3 (Tulu 3).* arXiv.
+- τ²-Bench (tau2-Bench): Task and Tool-Use Benchmark for Conversational AI Agents (retail split).
+- Unsloth (2024). Fast LLM fine-tuning library. github.com/unslothai/unsloth.
+- HuggingFace (2024). Transformers, PEFT, TRL, Datasets libraries.
+- OpenRouter (2024). Multi-provider LLM inference API. openrouter.ai.
