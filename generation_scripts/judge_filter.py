@@ -1,8 +1,13 @@
 """
-Tenacious-Bench v0.1 — Judge Filter
+Tenacious-Bench v0.1 — Judge Filter (Stage 1: Rule-Based)
 
 Rule-based quality filter + Jaccard deduplication.
 No LLM calls — fully deterministic.
+
+This is Stage 1 of a two-stage filter pipeline:
+  Stage 1 (this script):  Rule-based scoring + Jaccard dedup → filtered_dataset.jsonl
+  Stage 2 (judge_calibration.py): LLM calibration (dev-tier all tasks, eval-tier ~50
+                                  spot-check) → judge_calibration_log.jsonl
 
 Reads:
   generation_scripts/trace_derived_raw.jsonl
@@ -21,7 +26,7 @@ Jaccard dedup: tokenize narrative fields; drop if Jaccard ≥ 0.80 against any i
 (keep the task with the higher input_coherence score when evicting).
 
 Writes:
-  generation_scripts/judge_filter_log.jsonl   — one record per input task
+  generation_scripts/judge_filter_log.jsonl   — one record per input task (pass/fail + reason)
   generation_scripts/filtered_dataset.jsonl   — included tasks only
 """
 

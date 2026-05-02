@@ -22,6 +22,9 @@ hf_dataset_card.md
 # Claude memory system — local only
 memory/
 
+# Auto-generated calibration output — re-run judge_calibration.py to regenerate
+generation_scripts/judge_calibration_log.jsonl
+
 # Python
 __pycache__/
 *.py[cod]

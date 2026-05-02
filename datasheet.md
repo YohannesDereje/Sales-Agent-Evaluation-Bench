@@ -80,7 +80,7 @@ The dataset contains 237 tasks across 10 failure dimensions after quality filter
 | regex_positive | 38 | Require hedging language, disqualification signals |
 | field_presence | 30 | Require named concepts (delivery lead, availability) |
 
-### Key fields
+### Periscopic — Key field summary
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -98,6 +98,62 @@ The dataset contains 237 tasks across 10 failure dimensions after quality filter
 | `candidate_output` | string | Example failing email (ground truth for rubric calibration) |
 | `ground_truth.expected_pass` | bool | Whether a correct agent response should pass this task's rubric |
 | `ground_truth.passing_score` | float | Weighted score threshold for PASS (0.70) |
+
+### Microscopic — Input schema field catalogue
+
+Each field below documents valid values, whether it is required, the distribution across all 237 tasks, and any cross-field dependency constraints enforced by `judge_filter.py` and `partition_and_contamination.py`.
+
+#### Top-level task fields
+
+| Field | Required | Valid values | Distribution | Notes |
+|-------|----------|-------------|-------------|-------|
+| `task_id` | Yes | `TB-{DIM}-{MODE}-{SEQ}` string | Unique across 237 tasks | DIM ∈ {SOC,BOC,ICP,MTL,TD,SR,SE,DCC,GAP,CP}; MODE ∈ {HA,TD,SY,PG} |
+| `seed_dimension` | Yes | SOC, BOC, ICP, MTL, TD, SR, SE, DCC, GAP, CP | See composition table | Determines which rubric checks are generated in programmatic mode |
+| `source_mode` | Yes | programmatic, trace_derived, multi_llm_synthesis, hand_authored | 120 / 49 / 38 / 30 | Used to assign model rotation policy and human-review requirements |
+| `difficulty` | Yes | easy, medium, hard, adversarial | 26 / 118 / 63 / 30 | Adversarial reserved for hand-authored tasks only |
+| `candidate_output` | Yes (non-empty for hand_authored, trace_derived) | Free text string | Empty string for 120 programmatic tasks | Failing email demonstrating the target failure mode; used in inter-rater agreement |
+| `metadata.task_type` | No | seed, variation | 25 seed + 50 variation in synthesis mode | Absent in non-synthesis tasks |
+
+#### `input` object fields
+
+| Field | Required | Valid values | Distribution (237 tasks) | Cross-field constraint |
+|-------|----------|-------------|--------------------------|------------------------|
+| `task_description` | Yes | Free text, ≥ 10 chars | 100% present | Minimum 10 chars enforced by `judge_filter.py` (input_coherence check) |
+| `company_name` | Conditional | Non-empty string | Present in 117 tasks (hand_authored + trace_derived + synthesis) | Absent in all 120 programmatic tasks; absent ↔ `company_size` must be present |
+| `company_size` | Conditional | startup_under50, smb_50_500, enterprise_500plus | Present in all 120 programmatic tasks | Required when `company_name` absent |
+| `hiring_velocity_label` | Yes | strong_signal, moderate_signal, weak_hiring_velocity_signal, very_weak_signal | 29 / 71 / 84 / 53 | When value contains "weak" and `signal_confidence = Low`, SOC regex_negative checks are activated |
+| `signal_confidence` | Yes | High, Medium, Low | 52 / 97 / 88 | Low confidence co-occurs with weak velocity in 74 of 88 Low-confidence tasks |
+| `bench_state` | Yes | fully_available, partially_committed_50pct, overcommitted_waitlist | 98 / 76 / 63 | When overcommitted_waitlist: `bench_available_count` < `requested_headcount` is enforced |
+| `bench_available_count` | Conditional | Integer ≥ 0 | Present in 143 tasks | Required when `bench_state` ≠ fully_available; must be < `requested_headcount` when overcommitted |
+| `requested_headcount` | Yes | Integer 1–20 | Range [1, 15]; median 3 | Value is embedded verbatim in BOC regex_negative targets (e.g., "commit.{0,10}10") |
+| `icp_segment` | Conditional | in_icp, out_of_icp | Present in 28 ICP-dimension tasks | When out_of_icp: field_presence check for disqualification statement is activated |
+| `reliability_flag` | Conditional | true / false | Present in 24 SR-dimension tasks | When true: regex_negative for current-signal momentum language is activated |
+| `signal_age_days` | Conditional | Integer ≥ 0 | Present in 62 tasks; range [0, 548] | When ≥ 180: SR staleness checks are activated |
+| `ai_maturity_score` | Yes | Integer 1–5 | 1: 48 / 2: 52 / 3: 61 / 4: 46 / 5: 30 | Programmatic only; informs whether AI-tooling language is appropriate |
+| `prestige_indicator` | Conditional | Free text (company accolade, media mention) | Present in 30 hand-authored adversarial tasks | Used as 8-gram contamination proxy; unique across all 237 tasks |
+| `prospect_message` | Conditional | Free text | Present in 24 MTL-dimension tasks | Multi-thread leakage source; regex_negative patterns check for capability terms absent from current brief |
+
+#### `scoring_rubric` check object fields
+
+Each task has 1–4 check objects in its `scoring_rubric` array. Every check object contains:
+
+| Field | Required | Valid values | Notes |
+|-------|----------|-------------|-------|
+| `check_type` | Yes | regex_negative, regex_positive, length_check, field_presence | Enforced by `judge_filter.py` ground_truth_verifiability check |
+| `target` | Yes | String (regex/phrase) for regex checks; `{"min": int, "max": int}` for length_check; string for field_presence | Must be non-empty; regex patterns must be > 3 chars (rubric_application_clarity check) |
+| `weight` | Yes | Float in (0, 1]; all weights per task sum ≤ 1.0 | Enforced by judge_filter.py; weighted sum ≥ 0.70 required to PASS |
+| `description` | Yes | Free text | Human-readable explanation of the check; not used by scorer |
+
+#### Cross-field dependency summary
+
+| Condition | Triggered check | Dimension |
+|-----------|----------------|-----------|
+| `hiring_velocity_label` contains "weak" AND `signal_confidence = Low` | regex_negative: assertive velocity phrases | SOC |
+| `bench_state = overcommitted_waitlist` | regex_negative: specific headcount commitment language referencing `requested_headcount` value | BOC |
+| `icp_segment = out_of_icp` | field_presence: disqualification statement required | ICP |
+| `reliability_flag = true` OR `signal_age_days ≥ 180` | regex_negative: momentum/current-signal assertions | SR |
+| `prospect_message` contains hype vocabulary | regex_negative: banned tone phrases (rockstar, game-changing, etc.) | TD |
+| `prospect_message` references capability absent from `active_brief_capabilities` | regex_negative: specific capability terms | MTL |
 
 ---
 
@@ -313,48 +369,99 @@ Programmatic tasks have no `company_name` and an empty `candidate_output` — th
 
 ## 5. Uses
 
-### Intended uses
+### Telescopic
 
-Tenacious-Bench is designed to evaluate AI agents that generate structured B2B outreach emails given hiring-signal inputs in the Tenacious Technologies format. The benchmark is suitable for:
+Tenacious-Bench evaluates whether a B2B sales AI agent respects structured hiring-signal constraints when drafting outreach emails. It is appropriate for SFT evaluation, prompt engineering comparison, and regression testing against a deployed generation model. It is not a general email quality benchmark — the rubrics test business-rule adherence, not persuasiveness or deliverability.
+
+### Periscopic — intended and unsuitable uses
+
+**Intended uses:**
 
 - **SFT evaluation**: measure whether a fine-tuned generation model reduces SOC, BOC, and TD failure rates relative to a base model
 - **Rubric-based agent evaluation**: run `scoring_evaluator.py` against any agent's output on dev or held-out tasks to obtain a per-dimension pass rate
 - **Prompt engineering baselines**: compare zero-shot vs. chain-of-thought prompting strategies on the 10 failure dimensions
 - **Regression testing**: run the full 237-task suite after any model update to detect regressions in specific dimensions
 
-### Unsuitable uses
-
-The following uses are out of scope for v0.1 and may produce misleading results:
+**Unsuitable uses:**
 
 - **General email quality evaluation**: the rubrics check signal-grounding constraints, not writing quality, persuasiveness, or deliverability — a polished but SOC-violating email will score poorly by design
 - **Non-B2B or non-staffing contexts**: input fields (bench_state, hiring_velocity_label, signal_confidence) are specific to technical staffing; applying the benchmark to e.g. SaaS sales agents would require full re-authoring of rubrics and input schemas
 - **Agents without structured hiring brief input**: the tasks assume the agent receives structured signal fields, not raw text; agents that parse unstructured job postings are not the intended evaluee
 - **Evaluating prospect responses or CRM pipelines**: the benchmark evaluates only the generation step (outreach email), not downstream pipeline components
 
+### Microscopic — per-dimension use guidance
+
+| Dimension | Correct use | Common misuse to avoid |
+|-----------|-------------|------------------------|
+| SOC | Measure suppression of velocity over-claims from weak/stale signals | Do not use to evaluate general hedging quality — the rubric fires on specific velocity phrases only |
+| BOC | Measure whether agent avoids committing unavailable headcount | Do not use when `bench_available_count` is absent from the brief — BOC checks require the field to be present |
+| ICP | Measure binary disqualification compliance | Do not use to evaluate the *quality* of the disqualification message — only its presence is checked |
+| SR | Measure whether agent acknowledges signal staleness | Tasks with `signal_age_days < 90` have no SR checks — filtering to SR tasks and checking pass rate on the full partition will undercount |
+| TD | Measure tone-phrase compliance | Banned phrases are Tenacious-specific (from internal style guide); they do not cover all hype vocabulary generically |
+
 ---
 
 ## 6. Distribution
 
-**License**: Creative Commons Attribution 4.0 International (CC-BY-4.0). Users may share and adapt the dataset for any purpose provided attribution is given to the dataset creator.
+### Telescopic
 
-**HuggingFace URL**: [to be filled — planned release under `yohannes-10academy/tenacious-bench-v0.1`]
+Train and dev partitions are publicly released on HuggingFace under CC-BY-4.0. The held-out partition is not released to prevent leakage into future training runs. All generation and scoring scripts are included so the full pipeline is reproducible.
 
-**Held-out partition release policy**: `tenacious_bench_v0.1/held_out/held_out.jsonl` is **not released in v0.1**. It is excluded from the public repository via `.gitignore`. The held-out partition may be released after a v0.2 benchmark supersedes v0.1 and the held-out tasks no longer provide leakage risk to models trained on v0.1. The release decision will be made by the maintainer.
+### Periscopic — release inventory
 
-**What is released**: `train/train.jsonl` (118 tasks) and `dev/dev.jsonl` (71 tasks) are released publicly alongside all generation scripts, the contamination check output, and the inter-rater agreement documentation.
+| Artifact | Released | Location |
+|----------|----------|----------|
+| `train/train.jsonl` (118 tasks) | Yes | HuggingFace dataset card |
+| `dev/dev.jsonl` (71 tasks) | Yes | HuggingFace dataset card |
+| `held_out/held_out.jsonl` (48 tasks) | **No** | gitignored; not uploaded |
+| All generation scripts | Yes | GitHub repository |
+| `contamination_check.json` | Yes | `tenacious_bench_v0.1/` |
+| `inter_rater_agreement.md` | Yes | Repository root |
+| `scoring_evaluator.py` | Yes | Repository root |
 
-**Known limitations**: v0.1 tasks reference a single staffing company's business rules (Tenacious Technologies). Rubric patterns (banned phrases, velocity language) are calibrated to Tenacious's internal style guide and may not generalize to other staffing agencies without rubric revision.
+**License**: Creative Commons Attribution 4.0 International (CC-BY-4.0). Rationale: CC-BY-4.0 permits unrestricted academic and commercial use with attribution, consistent with the goal of enabling open SFT research on domain-specific agent evaluation. A more restrictive license (CC-BY-NC) was considered but rejected — restricting commercial use would prevent staffing firms from using the benchmark for internal agent audits, which is the primary intended application.
+
+**HuggingFace URL**: [huggingface.co/datasets/Yohannesdn/tenacious_bench_v0.1](https://huggingface.co/datasets/Yohannesdn/tenacious_bench_v0.1)
+
+**Held-out partition release policy**: `held_out.jsonl` is excluded from the public repository via `.gitignore` and was not uploaded to HuggingFace. It may be released after a v0.2 benchmark supersedes v0.1 and held-out tasks no longer pose leakage risk to models trained on v0.1 data. The release decision rests with the maintainer and requires a 90-day advance notice on the HuggingFace repository.
+
+### Microscopic — field-level distribution and bias notes
+
+| Field | Known distributional bias | Implication for downstream users |
+|-------|--------------------------|----------------------------------|
+| `signal_confidence` | Low: 37% of tasks — overrepresented relative to production signal mix (est. 20% Low) | Models fine-tuned on train split will see more Low-confidence scenarios than production; SOC suppression may be over-trained |
+| `company_size` | 100% programmatic tasks use enterprise_500plus or smb_50_500; startup_under50 appears only in 8 synthesis tasks | Startup outreach dynamics (founder-to-founder tone, different ICP criteria) are underrepresented |
+| `requested_headcount` | Median 3; max 15; no tasks with requested_headcount > 15 | Models not tested on large-scale staffing requests (20+ engineers); BOC checks may not generalize |
+| `source_mode` | programmatic: 51% of tasks | Programmatic tasks have no `company_name` and empty `candidate_output` — any downstream model trained on this split will see a different input distribution than a fully-populated real brief |
+| `seed_dimension` | SOC: 16% of tasks (highest); CP: 5% (lowest) | Per-dimension pass rates on an unbalanced dimension set should be reported with counts, not only percentages |
 
 ---
 
 ## 7. Maintenance
 
+### Telescopic
+
+The dataset is maintained by a single author at 10Academy. Major version increments are tied to partition changes or filter threshold changes. Minor updates (rubric description text, metadata additions) do not alter task IDs or scoring behavior.
+
+### Periscopic — maintenance policies
+
 **Maintainer**: Yohannes, yohannes@10academy.org (10Academy TRP1 program)
 
-**Update cadence**: Tenacious-Bench is updated on major version increments only. A v0.2 release is planned following validation of the SFT training loop (Path A). Minor task additions or rubric corrections within the same version are not planned — the benchmark is designed to be stable for longitudinal comparison.
+**Update cadence**: Tenacious-Bench is updated on major version increments only. A v0.2 release is planned adding four new failure dimensions (multi-turn constraint decay, numeric hallucination, competitor misrepresentation, temporal signal confusion) and expanding the held-out partition to 100+ tasks. Minor task additions or rubric corrections within the same version are not planned — the benchmark is designed to be stable for longitudinal comparison.
 
-**Deprecation plan**: v0.1 will be deprecated and superseded by v0.2 when the held-out partition has been used for at least one published evaluation and the held-out labels are no longer sensitive. A deprecation notice will be posted to the HuggingFace repository at least 90 days before the v0.1 held-out partition is released publicly. Users are encouraged to migrate to v0.2 evaluation infrastructure when it becomes available.
+**Deprecation plan**: v0.1 will be deprecated when the held-out partition has been used in at least one published evaluation and the held-out labels are no longer sensitive. A deprecation notice will be posted to the HuggingFace repository at least 90 days before the v0.1 held-out partition is released publicly.
 
-**Feedback and issue reporting**: Issues with specific tasks (mislabeled expected_pass, ambiguous rubric targets, scoring_evaluator bugs) should be filed at the project repository. The maintainer targets a 14-day response window for task-level corrections.
+**Feedback and issue reporting**: Issues with specific tasks (mislabeled expected_pass, ambiguous rubric targets, scoring_evaluator bugs) should be filed at the project GitHub repository. The maintainer targets a 14-day response window for task-level corrections.
 
 **Versioning**: dataset versions follow semantic versioning (`v{major}.{minor}`). A change to the held-out partition, the partition script seed, or the quality filter thresholds constitutes a major version increment. Rubric description text updates and metadata field additions are minor increments.
+
+### Microscopic — version change impact by field
+
+| Change type | Affected fields | Impact on existing evaluations |
+|-------------|----------------|-------------------------------|
+| Partition re-seed (`random.seed` value changed) | `task_id`, all partition assignments | All train/dev/held-out splits change — prior fine-tuning runs are not comparable; treat as a new major version |
+| Quality filter threshold change (e.g., INCLUDE_THRESHOLD 3 → 4) | Which tasks are included | Dataset shrinks; task IDs that were included may be excluded — prior pass rates are not directly comparable |
+| Rubric `target` field update (pattern text changed) | `scoring_rubric[*].target` | `scoring_evaluator.py` scores change for affected tasks; re-run all evaluations |
+| `difficulty` reclassification | `difficulty` field only | Does not affect scores; affects stratified analysis by difficulty |
+| New failure dimension added | `seed_dimension` enum, `task_id` format | Existing task IDs and scores are unaffected; overall pass rate denominator changes |
+| `candidate_output` field update | `candidate_output` | Does not affect scores (field is not used by `scoring_evaluator.py`); affects inter-rater agreement runs |

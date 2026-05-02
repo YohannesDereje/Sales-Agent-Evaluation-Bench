@@ -29,11 +29,20 @@ trace_derived_raw.jsonl        programmatic_raw.jsonl       hand_authored_tasks.
                                           |
                                           v
                                   judge_filter.py
-                           (quality score + Jaccard dedup)
+                      (Stage 1: rule-based score + Jaccard dedup)
                                           |
                                           v
                               filtered_dataset.jsonl
                               (237 tasks, all modes)
+                                          |
+                                          v
+                              judge_calibration.py
+                    (Stage 2: LLM calibration — dev-tier all tasks,
+                     eval-tier spot-check ~50 tasks, prompts committed)
+                                          |
+                                          v
+                         judge_calibration_log.jsonl
+                         (per-task pass/fail + agreement rate)
                                           |
                                           v
                            partition_and_contamination.py
@@ -103,9 +112,20 @@ trace_derived_raw.jsonl        programmatic_raw.jsonl       hand_authored_tasks.
 |-|-|
 | **Input** | All four raw files: `trace_derived_raw.jsonl`, `programmatic_raw.jsonl`, `synthesis_raw.jsonl`, `hand_authored_tasks.jsonl` |
 | **Output** | `judge_filter_log.jsonl` (335 records), `filtered_dataset.jsonl` (237 tasks) |
-| **Model** | None — fully rule-based |
+| **Model** | None — fully rule-based (Stage 1) |
 | **Cost** | $0 |
-| **What it does** | Scores every task on 3 quality dimensions (1-5 each), drops tasks below threshold, then deduplicates on compound scenario key using Jaccard similarity. See [Judge Filter Thresholds](#judge-filter-thresholds) section below. |
+| **What it does** | Stage 1 of the two-stage filter pipeline. Scores every task on 3 quality dimensions (1-5 each), drops tasks below threshold, then deduplicates on compound scenario key using Jaccard similarity. Output feeds directly into `judge_calibration.py`. See [Judge Filter Thresholds](#judge-filter-thresholds) section below. |
+
+### `judge_calibration.py`
+
+| | |
+|-|-|
+| **Input** | `generation_scripts/filtered_dataset.jsonl` (output of `judge_filter.py`) |
+| **Output** | `generation_scripts/judge_calibration_log.jsonl` (one record per task) |
+| **Dev-tier model** | `openai/gpt-4o-mini` via OpenRouter — runs on **all** 237 tasks |
+| **Eval-tier model** | `anthropic/claude-haiku-4-5-20251001` via OpenRouter — runs on **~50 sampled tasks only** |
+| **Cost** | ~$0.05–0.10 (gpt-4o-mini all tasks + claude-haiku 50 tasks) |
+| **What it does** | Stage 2 of the two-stage filter pipeline. Dev-tier LLM checks every task for rubric-to-failure-mode alignment, difficulty balance, and input consistency (each 1-5). Eval-tier LLM independently re-scores a 50-task random sample and reports agreement rate. Disagreement rate > 20% triggers a recalibration warning. Both judge prompts are committed as module-level string constants (`DEV_TIER_SYSTEM_PROMPT`, `EVAL_TIER_SYSTEM_PROMPT`). |
 
 ### `partition_and_contamination.py`
 
@@ -191,11 +211,15 @@ v0.1 result: all 3 checks PASS (0 flagged pairs, 5,664 Jaccard pairs checked).
 
 | Mode | Generating model | Judging model | Rationale |
 |------|-----------------|---------------|-----------|
-| trace_derived | None (rule-based extraction) | Rule-based scorer | No LLM involved |
-| programmatic | None (Python combinatorics) | Rule-based scorer | No LLM involved |
-| multi_llm_synthesis (seeds) | Claude Sonnet 4.6 (`anthropic/claude-sonnet-4-6`) | Rule-based scorer only | Claude never scores its own outputs |
-| multi_llm_synthesis (variations) | DeepSeek Chat (`deepseek/deepseek-chat`) | Rule-based scorer only | DeepSeek never scores its own outputs |
-| hand_authored | Human (dataset author) | Rule-based scorer | Human authoring + automated rubric verification |
+| trace_derived | None (rule-based extraction) | Rule-based scorer + dev-tier calibration | No LLM generates; dev-tier validates rubric alignment |
+| programmatic | None (Python combinatorics) | Rule-based scorer + dev-tier calibration | No LLM generates; dev-tier validates rubric alignment |
+| multi_llm_synthesis (seeds) | Claude Sonnet 4.6 (`anthropic/claude-sonnet-4-6`) | Rule-based scorer only; **excluded from eval-tier sample** | Claude never scores its own outputs; eval-tier exclusion enforced in `judge_calibration.py` |
+| multi_llm_synthesis (variations) | DeepSeek Chat (`deepseek/deepseek-chat`) | Rule-based scorer + dev-tier calibration | DeepSeek never scores its own outputs; gpt-4o-mini dev-tier is a separate model |
+| hand_authored | Human (dataset author) | Rule-based scorer + both calibration tiers | Human authoring + full automated + LLM calibration |
+
+**Calibration tier assignment:**
+- Dev-tier (`gpt-4o-mini`): all 237 tasks — checks rubric alignment, difficulty balance, input consistency
+- Eval-tier (`claude-haiku-4-5`): random 50-task sample, excluding synthesis-seed tasks (Claude-authored) — independently cross-validates dev-tier, reports agreement rate
 
 Rubrics are **always built programmatically** — no LLM constructs scoring targets or weights. This ensures that LLM quality variance cannot corrupt the evaluation signal.
 
