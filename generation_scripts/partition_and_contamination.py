@@ -4,12 +4,12 @@ Tenacious-Bench v0.1 — Partition and Contamination Check
 Reads:  generation_scripts/filtered_dataset.jsonl  (237 tasks)
 Splits: 50% train / 30% dev / 20% held_out  (random.seed(42))
 Writes: tenacious_bench_v0.1/{train,dev,held_out}/*.jsonl
-Runs:   3 contamination checks
+Runs:   4 contamination checks
 Writes: tenacious_bench_v0.1/contamination_check.json
 
 Contamination Check 1 — 8-gram overlap (zero tolerance)
-  Proxy for hiring_signal_brief: candidate_output text
-  (programmatic tasks have empty candidate_output → vacuously pass)
+  Proxy for hiring_signal_brief: prestige_indicator field
+  (programmatic tasks have no prestige_indicator → vacuously pass)
 
 Contamination Check 2 — Jaccard similarity (< 0.60)
   Proxy: compound scenario key (dim|company|velocity|confidence|bench|headcount)
@@ -18,6 +18,13 @@ Contamination Check 2 — Jaccard similarity (< 0.60)
 Contamination Check 3 — Time-shift verification
   Scan all text fields for pre-2026 dates asserted as current signals
   Method: regex scan for \\b202[0-5]\\b near "current|recent|latest|now" language
+
+Contamination Check 4 — Embedding cosine similarity (< 0.85 threshold)
+  Model: sentence-transformers/all-MiniLM-L6-v2 (22 M params, free, CPU-friendly)
+  Coverage: held_out vs train AND held_out vs dev
+  Threshold: cosine >= 0.85 → flagged  (Chen et al. 2025 recommendation)
+  Requires: pip install sentence-transformers
+  If not installed: check is skipped and recorded as skipped in the report.
 """
 
 import json
@@ -37,6 +44,16 @@ TRAIN_PATH    = BENCH_DIR / "train" / "train.jsonl"
 DEV_PATH      = BENCH_DIR / "dev" / "dev.jsonl"
 HELD_OUT_PATH = BENCH_DIR / "held_out" / "held_out.jsonl"
 CONTAM_PATH   = BENCH_DIR / "contamination_check.json"
+
+# ---------------------------------------------------------------------------
+# Embedding check configuration (Check 4)
+# ---------------------------------------------------------------------------
+
+# cheap 22 M-parameter model: no GPU required, ~80 ms per encode on CPU
+EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+# Flag any held-out / reference pair whose cosine similarity >= this threshold.
+# Chen et al. (2025) recommend < 0.85 for complete contamination detection.
+EMBEDDING_THRESHOLD  = 0.85
 
 # ---------------------------------------------------------------------------
 # Helpers — hiring_signal_brief proxies
@@ -212,6 +229,120 @@ def check_timeshift(all_partitions: list) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Check 4 — Embedding cosine similarity
+# ---------------------------------------------------------------------------
+
+def _embed_text(task: dict) -> str:
+    """
+    Build a single string to embed per task.
+    Combines the most scenario-specific fields so the embedding captures
+    the semantic content of the hiring situation, not boilerplate wording.
+    """
+    inp   = task.get("input", {})
+    parts = [
+        task.get("seed_dimension", ""),
+        inp.get("task_description", ""),
+        inp.get("company_name", "") or inp.get("company_size", ""),
+        inp.get("hiring_velocity_label", ""),
+        inp.get("signal_confidence", ""),
+        inp.get("bench_state", ""),
+        inp.get("prospect_message", "")[:120],
+        inp.get("prestige_indicator", ""),
+    ]
+    return " ".join(p for p in parts if p).strip()
+
+
+def check_embedding_cosine(train: list, dev: list, held_out: list) -> dict:
+    """
+    Check 4: embedding cosine similarity between each held-out task and every
+    train task, then every dev task.
+
+    Model:     sentence-transformers/all-MiniLM-L6-v2 (22 M params, CPU-friendly)
+    Threshold: EMBEDDING_THRESHOLD = 0.85
+    Coverage:  held_out vs train  AND  held_out vs dev
+    Rationale: Chen et al. (2025) show Jaccard misses paraphrased contamination;
+               cosine similarity at < 0.85 catches semantic near-duplicates that
+               share no surface n-grams.
+
+    Returns a structured dict compatible with contamination_check.json.
+    If sentence-transformers is not installed the check is skipped and recorded.
+    """
+    try:
+        from sentence_transformers import SentenceTransformer
+        import numpy as np
+    except ImportError:
+        return {
+            "passed":   None,
+            "skipped":  True,
+            "reason":   (
+                "sentence-transformers not installed. "
+                "Run: pip install sentence-transformers"
+            ),
+            "threshold":      EMBEDDING_THRESHOLD,
+            "model":          EMBEDDING_MODEL_NAME,
+            "pairs_checked":  0,
+        }
+
+    model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+
+    ho_texts  = [_embed_text(t) for t in held_out]
+    tr_texts  = [_embed_text(t) for t in train]
+    dev_texts = [_embed_text(t) for t in dev]
+
+    # normalize_embeddings=True → dot product equals cosine similarity
+    ho_embs  = model.encode(ho_texts,  normalize_embeddings=True, show_progress_bar=False)
+    tr_embs  = model.encode(tr_texts,  normalize_embeddings=True, show_progress_bar=False)
+    dev_embs = model.encode(dev_texts, normalize_embeddings=True, show_progress_bar=False)
+
+    flagged = []
+
+    # held_out vs train
+    sims_tr = ho_embs @ tr_embs.T   # shape: (n_held_out, n_train)
+    for i, ho_task in enumerate(held_out):
+        for j, tr_task in enumerate(train):
+            sim = float(sims_tr[i, j])
+            if sim >= EMBEDDING_THRESHOLD:
+                flagged.append({
+                    "held_out_task_id":  ho_task["task_id"],
+                    "compared_task_id":  tr_task["task_id"],
+                    "compared_partition": "train",
+                    "cosine_similarity": round(sim, 4),
+                })
+
+    # held_out vs dev
+    sims_dev = ho_embs @ dev_embs.T  # shape: (n_held_out, n_dev)
+    for i, ho_task in enumerate(held_out):
+        for j, dev_task in enumerate(dev):
+            sim = float(sims_dev[i, j])
+            if sim >= EMBEDDING_THRESHOLD:
+                flagged.append({
+                    "held_out_task_id":  ho_task["task_id"],
+                    "compared_task_id":  dev_task["task_id"],
+                    "compared_partition": "dev",
+                    "cosine_similarity": round(sim, 4),
+                })
+
+    ho_vs_tr_pairs  = len(held_out) * len(train)
+    ho_vs_dev_pairs = len(held_out) * len(dev)
+
+    return {
+        "passed":                  len(flagged) == 0,
+        "skipped":                 False,
+        "flagged_pairs":           flagged,
+        "threshold":               EMBEDDING_THRESHOLD,
+        "model":                   EMBEDDING_MODEL_NAME,
+        "held_out_vs_train_pairs": ho_vs_tr_pairs,
+        "held_out_vs_dev_pairs":   ho_vs_dev_pairs,
+        "pairs_checked":           ho_vs_tr_pairs + ho_vs_dev_pairs,
+        "rationale": (
+            "Chen et al. (2025): Jaccard misses paraphrased contamination; "
+            "cosine >= 0.85 catches semantic near-duplicates. "
+            "all-MiniLM-L6-v2 chosen for cost efficiency (22 M params, free)."
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -253,38 +384,57 @@ def main() -> None:
     # --- Contamination checks ---
     print("Running contamination checks...")
 
-    ngram_result  = check_ngram_overlap(train, held_out)
-    jaccard_result = check_jaccard(train, held_out)
+    ngram_result     = check_ngram_overlap(train, held_out)
+    jaccard_result   = check_jaccard(train, held_out)
     timeshift_result = check_timeshift(tasks)
+
+    print("Running embedding cosine check (sentence-transformers/all-MiniLM-L6-v2)...")
+    embedding_result = check_embedding_cosine(train, dev, held_out)
+
+    # Embedding check only blocks PASS if it ran (not skipped) and found flags.
+    embedding_ok = (
+        embedding_result.get("skipped", False)
+        or embedding_result["passed"]
+    )
 
     checks_passed = (
         ngram_result["passed"]
         and jaccard_result["passed"]
         and timeshift_result["passed"]
+        and embedding_ok
     )
     summary = "PASS" if checks_passed else "FAIL"
 
     contamination = {
-        "ngram_check":    ngram_result,
-        "jaccard_check":  jaccard_result,
-        "timeshift_check": timeshift_result,
-        "summary":        summary,
-        "total_tasks":    n_total,
-        "train_count":    len(train),
-        "dev_count":      len(dev),
-        "held_out_count": n_held_out,
+        "ngram_check":      ngram_result,
+        "jaccard_check":    jaccard_result,
+        "timeshift_check":  timeshift_result,
+        "embedding_check":  embedding_result,
+        "summary":          summary,
+        "total_tasks":      n_total,
+        "train_count":      len(train),
+        "dev_count":        len(dev),
+        "held_out_count":   n_held_out,
     }
 
     BENCH_DIR.mkdir(parents=True, exist_ok=True)
     with open(CONTAM_PATH, "w", encoding="utf-8") as f:
         json.dump(contamination, f, indent=2)
 
+    emb_status = (
+        "SKIP (sentence-transformers not installed)"
+        if embedding_result.get("skipped")
+        else f"{'PASS' if embedding_result['passed'] else 'FAIL'} "
+             f"({len(embedding_result.get('flagged_pairs', []))} flagged, "
+             f"{embedding_result['pairs_checked']} pairs checked)"
+    )
     print(f"8-gram check:   {'PASS' if ngram_result['passed'] else 'FAIL'} "
           f"({len(ngram_result['flagged_pairs'])} flagged pairs)")
     print(f"Jaccard check:  {'PASS' if jaccard_result['passed'] else 'FAIL'} "
           f"({len(jaccard_result['flagged_pairs'])} flagged pairs)")
     print(f"Time-shift:     {'PASS' if timeshift_result['passed'] else 'FAIL'} "
           f"({len(timeshift_result['flagged_tasks'])} flagged tasks)")
+    print(f"Embedding cos:  {emb_status}")
     print(f"Summary:        {summary}")
     print(f"contamination_check.json written -> {CONTAM_PATH}")
 

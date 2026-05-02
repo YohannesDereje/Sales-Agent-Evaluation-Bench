@@ -258,4 +258,24 @@ v0.2 will add these four dimensions, expand the held-out set to 100+ tasks, incr
 - Ivison et al. (2023). *Camels in a Changing Climate: Enhancing LM Adaptation with Tülu 3 (Tulu 3).* arXiv.
 - τ²-Bench (tau2-Bench): Task and Tool-Use Benchmark for Conversational AI Agents (retail split used for Week 10 baseline).
 - OpenRouter (2024). Multi-provider LLM inference API. openrouter.ai.
-- **License:** CC-BY-4.0 — dataset and all scripts in this repository are released under the Creative Commons Attribution 4.0 International License.
+- **License:** CC-BY-4.0 — see [`LICENSE`](LICENSE) for the full text.
+
+---
+
+## License and Attribution
+
+This repository is released under the **Creative Commons Attribution 4.0 International License** — see [`LICENSE`](LICENSE).
+
+**Attribution:** If you use Tenacious-Bench in your work, please cite:
+
+```
+Yohannes (2026). Tenacious-Bench v0.1: A Domain-Specific Evaluation Benchmark
+for B2B Sales AI Agents. 10Academy TRP1 Week 11.
+Dataset: https://huggingface.co/datasets/Yohannesdn/tenacious_bench_v0.1
+```
+
+**Credits:**
+- Backbone model: [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct) (Alibaba Cloud, Apache-2.0)
+- Training framework: [Unsloth](https://github.com/unslothai/unsloth) + [TRL](https://github.com/huggingface/trl)
+- Evaluation framework: [τ²-Bench](https://github.com/sierra-research/tau2-bench) (Week 10 baseline)
+- Literature: Gebru et al. (2021), Zhou et al. (2023), Chen et al. (2025) — full references above
