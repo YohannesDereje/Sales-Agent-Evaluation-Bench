@@ -216,7 +216,7 @@ Evaluation Bench/
 | 95% CI (1,000 bootstrap resamples) | [+18.7, +32.8] pp |
 | Verdict | **training_wins** — prompt engineering insufficient |
 
-The trained adapter is also **3.2× faster** than baseline at inference (3,266 ms vs 10,652 ms average, Colab T4).
+The trained adapter is also **3.2× faster** than baseline at inference (3,266 ms vs 10,652 ms average, Colab T4). The speedup is a decode-phase effect: autoregressive inference splits into a fixed-cost prefill phase (input tokens processed in parallel, compute-bound) and a linear-cost decode phase (one token generated per step, memory-bound, scales directly with output length). The baseline model generates verbose, unconstrained outputs; the LoRA adapter learned through SFT to produce concise, task-specific outputs — reducing the number of decode iterations proportionally. LoRA weights are merged into the base model at inference (`W' = W + BA`, per Hu et al. 2021), adding zero architectural overhead. Prompt engineering reduces latency slightly (8,421 ms) by partially constraining output length via in-context steering, but is less reliable than weight-level training for controlling the output distribution — the adapter internalised when to emit EOS, the prompt only suggests it.
 
 Seven tasks still fail with the trained adapter: SR×3, SOC×3, ICP×1. Full scored traces in `ablations/held_out_traces.jsonl`. All numeric claims are cross-referenced in `evidence_graph.json`.
 
@@ -257,6 +257,8 @@ v0.2 will add these four dimensions, expand the held-out set to 100+ tasks, incr
 - Chen et al. (2025). *Benchmark Contamination and Evaluation Integrity.* arXiv.
 - Ivison et al. (2023). *Camels in a Changing Climate: Enhancing LM Adaptation with Tülu 3 (Tulu 3).* arXiv.
 - τ²-Bench (tau2-Bench): Task and Tool-Use Benchmark for Conversational AI Agents (retail split used for Week 10 baseline).
+- Hu, E. J., et al. (2021). *LoRA: Low-Rank Adaptation of Large Language Models.* arXiv:2106.09685. (Describes the low-rank adaptation mechanism and zero-overhead inference via weight merging.)
+- Agrawal, A., et al. (2023). *SARATHI: Efficient LLM Inference by Piggybacking Decodes with Chunked Prefills.* arXiv:2308.16369. (Explains the prefill/decode split and why the decode phase dominates production latency.)
 - OpenRouter (2024). Multi-provider LLM inference API. openrouter.ai.
 - **License:** CC-BY-4.0 — see [`LICENSE`](LICENSE) for the full text.
 
