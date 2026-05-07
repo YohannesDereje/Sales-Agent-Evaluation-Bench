@@ -34,7 +34,24 @@ HF_REVISION     = "main"   # set to a commit SHA for full reproducibility
 LORA_R          = 16        # LoRA rank
 LORA_ALPHA      = 32        # LoRA alpha (scale = alpha / r = 2.0)
 LORA_DROPOUT    = 0.05
-LORA_TARGETS    = ["q_proj", "v_proj"]   # attention projections only — LoRA-only config
+# Q and V projections update attention routing — what the model looks for and what values
+# flow forward when a match fires. This is sufficient for SUPPRESSION tasks (teaching the
+# model NOT to produce banned phrases), which are routing behaviors.
+# It is NOT sufficient for GENERATION tasks that require composing specific new output
+# phrases (e.g. "curious whether", "if your team") — those require FFN updates because the
+# FFN layers (gate_proj, up_proj, down_proj) are the per-token key-value memories where
+# token-level generative capacity lives (Geva et al. 2021). The 3 residual SOC failures in
+# ablations/held_out_traces.jsonl (regex_negative PASS, regex_positive FAIL) are the
+# empirical signature of this limitation.
+#
+# v0.1 config — Q+V routing only (sufficient for suppression, insufficient for generation)
+LORA_TARGETS    = ["q_proj", "v_proj"]
+
+# v0.2 recommended config — add FFN targets for generative phrase composition:
+# LORA_TARGETS  = ["q_proj", "v_proj", "gate_proj", "up_proj", "down_proj"]
+# Expected: regex_positive pass-rate on SOC jumps from 6/9 to 8-9/9;
+# regex_negative pass-rate stays at 9/9 (suppression already worked).
+# Re-evaluate rank r=16 after adding FFN targets — effective param count grows ~4x.
 
 LEARNING_RATE   = 2e-4
 LR_SCHEDULER    = "linear"  # linear warmup then linear decay
