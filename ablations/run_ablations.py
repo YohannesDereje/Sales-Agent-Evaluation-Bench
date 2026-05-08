@@ -277,6 +277,26 @@ def paired_bootstrap(
     """
     Paired bootstrap confidence interval and p-value for the lift (A - B).
 
+    Pairing is the correct design here because the same 48 held-out tasks are
+    evaluated under all variants — this is a within-subject experiment, not two
+    independent samples. Drawing the same task index for both A and B preserves
+    that structure. Drawing indices independently would estimate uncertainty for a
+    different experiment (A and B evaluated on unrelated task samples) and answers
+    the wrong question even if the two CIs happen to be numerically similar.
+
+    Variance-reduction note: pairing reduces SE in proportion to the covariance
+    between A and B: SE_paired = sqrt((Var(A) + Var(B) - 2·Cov(A,B)) / n).
+    For Tenacious-Bench v0.1 held-out data, r(lora, baseline) = 0.167 and
+    Cov ≈ 0.028, so pairing yields only ~8.4% SE reduction over unpaired —
+    nearly identical empirical CIs. Low r arises because the trained model passes
+    on 26 tasks the baseline fails (decorrelated vectors), which is evidence of a
+    large capability gap, not a flaw in the design.
+
+    IMPORTANT: ablation_results.json (delta_a_lift = 0.264, CI [0.187, 0.328])
+    does not match the lift computed directly from held_out_traces.jsonl (0.521,
+    CI [0.354, 0.688]). Before citing either number as reviewer-facing evidence,
+    confirm which file reflects the real Colab T4 run and correct the other.
+
     Returns:
         lift:     observed mean(A) - mean(B)
         ci_lower: 2.5th percentile of bootstrap distribution

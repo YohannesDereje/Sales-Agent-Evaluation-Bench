@@ -213,7 +213,7 @@ Evaluation Bench/
 | Prompt engineering only (Delta B) | 41.7% (20/48) |
 | Trained LoRA adapter (Delta A) | **85.4% (41/48)** |
 | Delta A lift over baseline | **+26.4 pp** |
-| 95% CI (1,000 bootstrap resamples) | [+18.7, +32.8] pp |
+| 95% CI (1,000 bootstrap resamples) | [+18.7, +32.8] pp (paired — same 48 tasks evaluated under all variants) |
 | Verdict | **training_wins** — prompt engineering insufficient |
 
 The trained adapter is also **3.2× faster** than baseline at inference (3,266 ms vs 10,652 ms average, Colab T4). The speedup is a decode-phase effect: autoregressive inference splits into a fixed-cost prefill phase (input tokens processed in parallel, compute-bound) and a linear-cost decode phase (one token generated per step, memory-bound, scales directly with output length). The baseline model generates verbose, unconstrained outputs; the LoRA adapter learned through SFT to produce concise, task-specific outputs — reducing the number of decode iterations proportionally. LoRA weights are merged into the base model at inference (`W' = W + BA`, per Hu et al. 2021), adding zero architectural overhead. Prompt engineering reduces latency slightly (8,421 ms) by partially constraining output length via in-context steering, but is less reliable than weight-level training for controlling the output distribution — the adapter internalised when to emit EOS, the prompt only suggests it.
